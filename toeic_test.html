@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TOEIC 全真模擬試題 Part 1–7</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a56db">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TOEIC">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1a202c;min-height:100vh}
+header{background:linear-gradient(135deg,#1a56db,#0e3fa5);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+header h1{font-size:1.1rem;font-weight:700}
+#timer{font-size:1.3rem;font-weight:700;background:rgba(255,255,255,.15);padding:6px 14px;border-radius:8px;letter-spacing:1px}
+#timer.warn{background:#e53e3e;animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* Screens */
+#screen-intro,#screen-test,#screen-result{display:none;max-width:800px;margin:0 auto;padding:20px}
+#screen-intro{display:block}
+
+/* Intro */
+.intro-card{background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 16px rgba(0,0,0,.08);margin-top:20px}
+.intro-card h2{font-size:1.5rem;margin-bottom:12px;color:#1a56db}
+.intro-card p{color:#4a5568;line-height:1.7;margin-bottom:8px}
+.part-list{margin:16px 0;border-collapse:collapse;width:100%}
+.part-list th,.part-list td{padding:8px 12px;border:1px solid #e2e8f0;text-align:left;font-size:.9rem}
+.part-list th{background:#ebf4ff;color:#1a56db}
+.btn-start{display:block;width:100%;padding:16px;background:linear-gradient(135deg,#1a56db,#0e3fa5);color:#fff;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;margin-top:20px;transition:.2s}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(26,86,219,.4)}
+
+/* Progress */
+#progress-bar{background:#e2e8f0;height:6px;width:100%}
+#progress-fill{height:6px;background:#1a56db;transition:width .3s}
+#part-label{text-align:center;font-size:.8rem;color:#718096;padding:6px;background:#fff;border-bottom:1px solid #e2e8f0}
+
+/* Question card */
+.q-card{background:#fff;border-radius:14px;padding:24px;margin-bottom:16px;box-shadow:0 1px 8px rgba(0,0,0,.07)}
+.q-num{font-size:.75rem;font-weight:700;color:#1a56db;text-transform:uppercase;margin-bottom:6px}
+.q-text{font-size:1rem;line-height:1.7;margin-bottom:16px;color:#2d3748}
+.q-text strong{color:#1a56db}
+.passage{background:#f7fafc;border-left:3px solid #1a56db;padding:12px 16px;border-radius:0 8px 8px 0;font-size:.92rem;line-height:1.8;margin-bottom:16px;color:#2d3748}
+.options{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;transition:.15s;font-size:.93rem;line-height:1.5}
+.opt:hover{border-color:#1a56db;background:#ebf4ff}
+.opt.selected{border-color:#1a56db;background:#ebf4ff}
+.opt.correct{border-color:#38a169;background:#f0fff4}
+.opt.wrong{border-color:#e53e3e;background:#fff5f5}
+.opt-letter{font-weight:700;color:#4a5568;min-width:18px}
+.scene-img{width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-bottom:14px}
+.audio-bar{display:flex;align-items:center;gap:10px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.play-btn{background:#1a56db;color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-size:.85rem;font-weight:600;white-space:nowrap}
+.play-btn:hover{background:#0e3fa5}
+.audio-label{font-size:.85rem;color:#4a5568}
+
+/* Nav */
+.nav-bar{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:12px}
+.btn-nav{padding:10px 24px;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;transition:.15s}
+.btn-prev{background:#e2e8f0;color:#4a5568}
+.btn-prev:hover{background:#cbd5e0}
+.btn-next{background:#1a56db;color:#fff}
+.btn-next:hover{background:#0e3fa5}
+.btn-submit{background:#e53e3e;color:#fff}
+.btn-submit:hover{background:#c53030}
+.q-pills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.pill{width:28px;height:28px;border-radius:50%;border:2px solid #e2e8f0;background:#fff;font-size:.7rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;color:#4a5568}
+.pill.ans{border-color:#38a169;background:#f0fff4;color:#38a169}
+.pill.cur{border-color:#1a56db;background:#1a56db;color:#fff}
+
+/* Result */
+.result-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 16px rgba(0,0,0,.08);margin-top:20px}
+.score-big{font-size:3rem;font-weight:800;color:#1a56db;text-align:center}
+.score-sub{text-align:center;color:#718096;margin-bottom:20px}
+.part-scores{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:16px 0}
+.ps{background:#f7fafc;border-radius:10px;padding:12px;text-align:center}
+.ps-name{font-size:.72rem;color:#718096;font-weight:600}
+.ps-val{font-size:1.3rem;font-weight:800;color:#1a56db}
+.review-list{margin-top:20px}
+.r-item{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:10px;font-size:.88rem}
+.r-item.ok{border-color:#38a169}
+.r-item.bad{border-color:#e53e3e;background:#fff5f5}
+.r-q{color:#2d3748;margin-bottom:6px;line-height:1.5}
+.r-ans{font-size:.82rem;margin-top:4px}
+.r-ans .correct-lbl{color:#38a169;font-weight:700}
+.r-ans .wrong-lbl{color:#e53e3e;font-weight:700}
+.btn-home{display:inline-block;margin-top:16px;padding:10px 20px;background:#1a56db;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;text-decoration:none}
+.btn-home:hover{background:#0e3fa5}
+.translation-box{margin-top:14px;background:#fffbeb;border:1.5px solid #f6e05e;border-radius:10px;padding:12px 16px;font-size:.88rem;line-height:1.7;color:#744210}
+.translation-box .zh-label{font-size:.72rem;font-weight:700;color:#b7791f;text-transform:uppercase;margin-bottom:4px}
+.translation-box .zh-sentence{color:#2d3748;font-size:.92rem}
+
+/* Conversation / talk context */
+.ctx-box{background:#fffbeb;border:1px solid #f6e05e;border-radius:10px;padding:14px;margin-bottom:14px;font-size:.88rem;line-height:1.8;color:#2d3748}
+.ctx-title{font-size:.72rem;font-weight:700;color:#b7791f;margin-bottom:6px;text-transform:uppercase}
+.dialogue p{margin-bottom:4px}
+.dialogue .speaker{font-weight:700;color:#1a56db}
+
+@media(max-width:600px){
+  header h1{font-size:.9rem}
+  #timer{font-size:1rem;padding:4px 10px}
+  .q-card{padding:16px}
+  .btn-nav{padding:8px 16px;font-size:.85rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📝 TOEIC 全真模擬試題</h1>
+  <div id="timer">140:00</div>
+</header>
+<div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+<div id="part-label">準備開始</div>
+
+<!-- INTRO SCREEN -->
+<div id="screen-intro">
+  <div class="intro-card">
+    <h2>TOEIC 全真模擬試題 Part 1–7</h2>
+    <p>本試題依照正式多益測驗格式設計，共 <strong>117 題</strong>，測驗時間 <strong>140 分鐘</strong>。</p>
+    <p style="margin-top:8px;color:#718096;font-size:.85rem">⚠️ Part 1–4 為聽力部分，本系統以文字模擬音檔內容（可點「播放」聆聽 TTS 朗讀）。</p>
+    <table class="part-list">
+      <tr><th>Part</th><th>題型</th><th>題數</th></tr>
+      <tr><td>Part 1</td><td>照片描述</td><td>6</td></tr>
+      <tr><td>Part 2</td><td>應答問題</td><td>25</td></tr>
+      <tr><td>Part 3</td><td>簡短對話</td><td>9</td></tr>
+      <tr><td>Part 4</td><td>簡短獨白</td><td>6</td></tr>
+      <tr><td>Part 5</td><td>句子填空</td><td>31</td></tr>
+      <tr><td>Part 6</td><td>篇章填空</td><td>8</td></tr>
+      <tr><td>Part 7</td><td>閱讀測驗</td><td>32</td></tr>
+      <tr><td colspan="2"><strong>合計</strong></td><td><strong>117</strong></td></tr>
+    </table>
+    <button class="btn-start" onclick="startTest()">開始測驗</button>
+    <a href="index.html" style="display:block;text-align:center;margin-top:12px;color:#718096;font-size:.85rem">← 返回複習 App</a>
+  </div>
+</div>
+
+<!-- TEST SCREEN -->
+<div id="screen-test">
+  <div class="q-pills" id="q-pills"></div>
+  <div id="q-area"></div>
+  <div class="nav-bar">
+    <button class="btn-nav btn-prev" onclick="navQ(-1)">← 上一題</button>
+    <span id="q-counter" style="font-size:.85rem;color:#718096"></span>
+    <button class="btn-nav btn-next" id="btn-next" onclick="navQ(1)">下一題 →</button>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="screen-result">
+  <div class="result-card">
+    <div class="score-big" id="score-big"></div>
+    <div class="score-sub" id="score-sub"></div>
+    <div class="part-scores" id="part-scores"></div>
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">
+    <h3 style="margin-bottom:10px">答題詳解</h3>
+    <div class="review-list" id="review-list"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn-home" onclick="location.reload()">重新測驗</button>
+      <a class="btn-home" href="index.html" style="background:#4a5568">← 返回複習 App</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== QUESTION DATA ====================
+const QUESTIONS = [
+
+// ===== PART 1: Photo Descriptions (Q1-6) =====
+// SVG scenes are defined here for Part 1
+{
+  id:1, part:1, partName:'Part 1 照片描述',
+  svgScene:`<svg width="100%" height="180" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;display:block">
+  <rect width="600" height="180" fill="#dbe9ff"/>
+  <!-- window -->
+  <rect x="20" y="20" width="80" height="100" fill="#93c5fd" rx="4"/>
+  <line x1="60" y1="20" x2="60" y2="120" stroke="#60a5fa" stroke-width="2"/>
+  <line x1="20" y1="70" x2="100" y2="70" stroke="#60a5fa" stroke-width="2"/>
+  <!-- desk -->
+  <rect x="120" y="100" width="350" height="12" fill="#92400e" rx="3"/>
+  <rect x="140" y="112" width="14" height="50" fill="#78350f"/>
+  <rect x="440" y="112" width="14" height="50" fill="#78350f"/>
+  <!-- monitor -->
+  <rect x="220" y="50" width="120" height="80" fill="#1e3a5f" rx="6"/>
+  <rect x="228" y="58" width="104" height="60" fill="#3b82f6" rx="3"/>
+  <!-- monitor stand -->
+  <rect x="272" y="128" width="16" height="12" fill="#374151"/>
+  <rect x="258" y="138" width="44" height="6" fill="#374151" rx="2"/>
+  <!-- papers on desk -->
+  <rect x="360" y="88" width="80" height="14" fill="#fff" rx="2" transform="rotate(-5,400,95)"/>
+  <rect x="365" y="84" width="80" height="14" fill="#f0f9ff" rx="2" transform="rotate(-2,405,91)"/>
+  <!-- person (woman sitting) -->
+  <circle cx="300" cy="38" r="16" fill="#fbbf24"/>
+  <rect x="282" y="54" width="36" height="44" fill="#6366f1" rx="8"/>
+  <!-- arms -->
+  <line x1="282" y1="68" x2="260" y2="90" stroke="#6366f1" stroke-width="10" stroke-linecap="round"/>
+  <line x1="318" y1="68" x2="340" y2="90" stroke="#6366f1" stroke-width="10" stroke-linecap="round"/>
+  <!-- chair -->
+  <rect x="268" y="96" width="64" height="8" fill="#4b5563" rx="4"/>
+  <!-- label -->
+  <rect x="0" y="158" width="600" height="22" fill="rgba(0,0,0,.45)"/>
+  <text x="300" y="173" text-anchor="middle" fill="#fff" font-size="12" font-family="Arial">Office Scene — A woman reviewing documents at her desk</text>
+</svg>`,
+  text:'Look at the photo and choose the statement that best describes what you see.',
+  tts:'Look at the photo. A woman is sitting at a desk with a computer. There are papers and office supplies around her.',
+  options:['(A) A woman is standing near the window.',
+           '(B) A woman is reviewing documents at her desk.',
+           '(C) A man is operating a copy machine.',
+           '(D) Several employees are having a meeting.'],
+  answer:1
+},
+{
+  id:2, part:1, partName:'Part 1 照片描述',
+  svgScene:`<svg width="100%" height="180" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;display:block">
+  <rect width="600" height="180" fill="#fef3c7"/>
+  <!-- sky -->
+  <rect width="600" height="100" fill="#bfdbfe"/>
+  <!-- building skeleton -->
+  <rect x="100" y="40" width="200" height="140" fill="#d1d5db" rx="2"/>
+  <rect x="120" y="40" width="8" height="140" fill="#9ca3af"/>
+  <rect x="160" y="40" width="8" height="140" fill="#9ca3af"/>
+  <rect x="200" y="40" width="8" height="140" fill="#9ca3af"/>
+  <rect x="240" y="40" width="8" height="140" fill="#9ca3af"/>
+  <rect x="100" y="80" width="200" height="8" fill="#9ca3af"/>
+  <rect x="100" y="120" width="200" height="8" fill="#9ca3af"/>
+  <!-- crane -->
+  <rect x="380" y="10" width="10" height="160" fill="#f59e0b"/>
+  <rect x="310" y="10" width="80" height="10" fill="#f59e0b"/>
+  <line x1="385" y1="10" x2="320" y2="20" stroke="#f59e0b" stroke-width="3"/>
+  <line x1="385" y1="20" x2="388" y2="60" stroke="#374151" stroke-width="2"/>
+  <!-- worker 1 -->
+  <circle cx="200" cy="52" r="10" fill="#fbbf24"/>
+  <rect x="193" y="62" width="14" height="20" fill="#ef4444"/>
+  <!-- hard hat -->
+  <ellipse cx="200" cy="44" rx="12" ry="6" fill="#f59e0b"/>
+  <!-- worker 2 -->
+  <circle cx="160" cy="52" r="10" fill="#fbbf24"/>
+  <rect x="153" y="62" width="14" height="20" fill="#3b82f6"/>
+  <ellipse cx="160" cy="44" rx="12" ry="6" fill="#f59e0b"/>
+  <!-- tool box -->
+  <rect x="220" y="155" width="40" height="20" fill="#6b7280" rx="3"/>
+  <!-- ground -->
+  <rect x="0" y="160" width="600" height="20" fill="#92400e"/>
+  <!-- label -->
+  <rect x="0" y="158" width="600" height="22" fill="rgba(0,0,0,.45)"/>
+  <text x="300" y="173" text-anchor="middle" fill="#fff" font-size="12" font-family="Arial">Construction Site — Workers in hard hats installing equipment</text>
+</svg>`,
+  text:'Look at the photo and choose the statement that best describes what you see.',
+  tts:'Look at the photo. Workers wearing hard hats are installing equipment at a construction site.',
+  options:['(A) Workers are painting the exterior of a building.',
+           '(B) A worker is operating a forklift inside a warehouse.',
+           '(C) Workers in hard hats are installing equipment near a building.',
+           '(D) Employees are unloading boxes from a delivery truck.'],
+  answer:2
+},
+{
+  id:3, part:1, partName:'Part 1 照片描述',
+  svgScene:`<svg width="100%" height="180" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;display:block">
+  <rect width="600" height="180" fill="#fdf6ec"/>
+  <!-- wall -->
+  <rect width="600" height="180" fill="#fef9f0"/>
+  <!-- tables -->
+  <rect x="60" y="100" width="160" height="10" fill="#92400e" rx="3"/>
+  <rect x="340" y="100" width="160" height="10" fill="#92400e" rx="3"/>
+  <!-- table legs -->
+  <rect x="75" y="110" width="10" height="50" fill="#78350f"/>
+  <rect x="195" y="110" width="10" height="50" fill="#78350f"/>
+  <rect x="355" y="110" width="10" height="50" fill="#78350f"/>
+  <rect x="475" y="110" width="10" height="50" fill="#78350f"/>
+  <!-- plates on table 1 -->
+  <ellipse cx="110" cy="97" rx="20" ry="6" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <ellipse cx="170" cy="97" rx="20" ry="6" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <!-- plates on table 2 -->
+  <ellipse cx="390" cy="97" rx="20" ry="6" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <ellipse cx="450" cy="97" rx="20" ry="6" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <!-- seated customers table 2 -->
+  <circle cx="390" cy="68" r="10" fill="#fbbf24"/>
+  <rect x="383" y="78" width="14" height="22" fill="#8b5cf6"/>
+  <circle cx="450" cy="68" r="10" fill="#fb923c"/>
+  <rect x="443" y="78" width="14" height="22" fill="#ec4899"/>
+  <!-- server (standing, carrying plate) -->
+  <circle cx="280" cy="55" r="12" fill="#fbbf24"/>
+  <rect x="271" y="67" width="18" height="30" fill="#1d4ed8"/>
+  <!-- arm holding plate -->
+  <line x1="289" y1="80" x2="310" y2="75" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>
+  <ellipse cx="320" cy="74" rx="18" ry="5" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/>
+  <!-- food on plate -->
+  <circle cx="320" cy="72" r="6" fill="#fca5a5"/>
+  <!-- label -->
+  <rect x="0" y="158" width="600" height="22" fill="rgba(0,0,0,.45)"/>
+  <text x="300" y="173" text-anchor="middle" fill="#fff" font-size="12" font-family="Arial">Restaurant — A server placing dishes on a table</text>
+</svg>`,
+  text:'Look at the photo and choose the statement that best describes what you see.',
+  tts:'Look at the photo. A server is placing dishes on a table. Customers are seated and waiting.',
+  options:['(A) A chef is preparing food in the kitchen.',
+           '(B) Customers are standing in line at a counter.',
+           '(C) A server is placing dishes on a table.',
+           '(D) Tables and chairs are being arranged by staff.'],
+  answer:2
+},
+{
+  id:4, part:1, partName:'Part 1 照片描述',
+  svgScene:`<svg width="100%" height="180" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;display:block">
+  <rect width="600" height="180" fill="#f0f4ff"/>
+  <!-- projection screen -->
+  <rect x="200" y="15" width="180" height="110" fill="#fff" stroke="#94a3b8" stroke-width="3" rx="4"/>
+  <!-- chart on screen -->
+  <rect x="215" y="80" width="20" height="30" fill="#3b82f6"/>
+  <rect x="245" y="60" width="20" height="50" fill="#6366f1"/>
+  <rect x="275" y="45" width="20" height="65" fill="#0ea5e9"/>
+  <rect x="305" y="70" width="20" height="40" fill="#8b5cf6"/>
+  <line x1="210" y1="110" x2="340" y2="110" stroke="#94a3b8" stroke-width="2"/>
+  <!-- presenter -->
+  <circle cx="165" cy="58" r="12" fill="#fbbf24"/>
+  <rect x="156" y="70" width="18" height="30" fill="#1d4ed8"/>
+  <!-- pointing arm -->
+  <line x1="174" y1="78" x2="200" y2="75" stroke="#1d4ed8" stroke-width="7" stroke-linecap="round"/>
+  <!-- conference table -->
+  <ellipse cx="300" cy="158" rx="240" ry="25" fill="#92400e"/>
+  <!-- seated people -->
+  <circle cx="100" cy="130" r="10" fill="#fbbf24"/><rect x="93" y="140" width="14" height="20" fill="#6b7280"/>
+  <circle cx="160" cy="125" r="10" fill="#fb923c"/><rect x="153" y="135" width="14" height="20" fill="#374151"/>
+  <circle cx="430" cy="125" r="10" fill="#86efac"/><rect x="423" y="135" width="14" height="20" fill="#1d4ed8"/>
+  <circle cx="490" cy="130" r="10" fill="#fca5a5"/><rect x="483" y="140" width="14" height="20" fill="#7c3aed"/>
+  <!-- label -->
+  <rect x="0" y="158" width="600" height="22" fill="rgba(0,0,0,.45)"/>
+  <text x="300" y="173" text-anchor="middle" fill="#fff" font-size="12" font-family="Arial">Conference Room — A presenter pointing at charts on a screen</text>
+</svg>`,
+  text:'Look at the photo and choose the statement that best describes what you see.',
+  tts:'Look at the photo. A presenter is standing near a projection screen, pointing at charts and graphs.',
+  options:['(A) Employees are signing contracts at a long table.',
+           '(B) A presenter is pointing at charts on a screen.',
+           '(C) A technician is setting up audio equipment.',
+           '(D) People are exiting the conference room.'],
+  answer:1
+},
+{
+  id:5, part:1, partName:'Part 1 照片描述',
+  svgScene:`<svg width="100%" height="180" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;display:block">
+  <rect width="600" height="180" fill="#f1f5f9"/>
+  <!-- floor -->
+  <rect x="0" y="155" width="600" height="25" fill="#e2e8f0"/>
+  <!-- shelf unit 1 -->
+  <rect x="30" y="20" width="160" height="140" fill="#d1d5db" rx="2"/>
+  <rect x="30" y="20" width="160" height="8" fill="#6b7280"/>
+  <rect x="30" y="65" width="160" height="8" fill="#6b7280"/>
+  <rect x="30" y="110" width="160" height="8" fill="#6b7280"/>
+  <!-- boxes shelf 1 -->
+  <rect x="38" y="30" width="35" height="30" fill="#fbbf24" rx="2"/><rect x="78" y="30" width="35" height="30" fill="#3b82f6" rx="2"/><rect x="118" y="30" width="35" height="30" fill="#ef4444" rx="2"/>
+  <rect x="38" y="75" width="40" height="30" fill="#10b981" rx="2"/><rect x="83" y="75" width="40" height="30" fill="#8b5cf6" rx="2"/><rect x="128" y="75" width="35" height="30" fill="#f97316" rx="2"/>
+  <rect x="38" y="120" width="30" height="28" fill="#06b6d4" rx="2"/><rect x="73" y="120" width="30" height="28" fill="#ec4899" rx="2"/>
+  <!-- shelf unit 2 -->
+  <rect x="220" y="20" width="160" height="140" fill="#d1d5db" rx="2"/>
+  <rect x="220" y="20" width="160" height="8" fill="#6b7280"/>
+  <rect x="220" y="65" width="160" height="8" fill="#6b7280"/>
+  <rect x="220" y="110" width="160" height="8" fill="#6b7280"/>
+  <rect x="228" y="30" width="35" height="30" fill="#a3e635" rx="2"/><rect x="268" y="30" width="35" height="30" fill="#fbbf24" rx="2"/><rect x="308" y="30" width="35" height="30" fill="#60a5fa" rx="2"/>
+  <rect x="228" y="75" width="40" height="30" fill="#f9a8d4" rx="2"/><rect x="273" y="75" width="40" height="30" fill="#fcd34d" rx="2"/>
+  <rect x="228" y="120" width="35" height="28" fill="#6ee7b7" rx="2"/><rect x="268" y="120" width="30" height="28" fill="#c4b5fd" rx="2"/>
+  <!-- worker with scanner -->
+  <circle cx="470" cy="65" r="13" fill="#fbbf24"/>
+  <rect x="460" y="78" width="20" height="34" fill="#1d4ed8"/>
+  <!-- scanner arm -->
+  <line x1="480" y1="88" x2="510" y2="100" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>
+  <rect x="505" y="94" width="22" height="14" fill="#374151" rx="3"/>
+  <!-- scanner beam -->
+  <line x1="527" y1="101" x2="545" y2="101" stroke="#ef4444" stroke-width="2.5"/>
+  <!-- label -->
+  <rect x="0" y="158" width="600" height="22" fill="rgba(0,0,0,.45)"/>
+  <text x="300" y="173" text-anchor="middle" fill="#fff" font-size="12" font-family="Arial">Warehouse — A worker scanning items among fully stocked shelves</text>
+</svg>`,
+  text:'Look at the photo and choose the statement that best describes what you see.',
+  tts:'Look at the photo. Inside a warehouse, shelves are fully stocked with boxes. A worker is scanning items with a handheld device.',
+  options:['(A) Workers are loading boxes onto a conveyor belt.',
+           '(B) The warehouse shelves are completely empty.',
+           '(C) A worker is using a scanner among fully stocked shelves.',
+           '(D) Two workers are carrying heavy equipment.'],
+  answer:2
+},
+{
+  id:6, part:1, partName:'Part 1 照片描述',
+  svgScene:`<svg width="100%" height="180" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" style="border-radius:10px;display:block">
+  <rect width="600" height="180" fill="#fffbf0"/>
+  <!-- lobby background -->
+  <rect width="600" height="130" fill="#fef9f0"/>
+  <!-- floor marble -->
+  <rect x="0" y="130" width="600" height="50" fill="#e5e7eb"/>
+  <line x1="0" y1="145" x2="600" y2="145" stroke="#d1d5db" stroke-width="1"/>
+  <line x1="150" y1="130" x2="150" y2="180" stroke="#d1d5db" stroke-width="1"/>
+  <line x1="300" y1="130" x2="300" y2="180" stroke="#d1d5db" stroke-width="1"/>
+  <line x1="450" y1="130" x2="450" y2="180" stroke="#d1d5db" stroke-width="1"/>
+  <!-- reception desk -->
+  <rect x="150" y="85" width="300" height="55" fill="#7c3aed" rx="6"/>
+  <rect x="155" y="80" width="290" height="12" fill="#6d28d9" rx="4"/>
+  <!-- hotel sign on desk -->
+  <rect x="260" y="86" width="80" height="14" fill="#fff" rx="3"/>
+  <text x="300" y="97" text-anchor="middle" fill="#6d28d9" font-size="8" font-weight="bold" font-family="Arial">GRAND HOTEL</text>
+  <!-- receptionist -->
+  <circle cx="260" cy="58" r="12" fill="#fbbf24"/>
+  <rect x="251" y="70" width="18" height="28" fill="#ec4899"/>
+  <!-- arm handing card -->
+  <line x1="269" y1="80" x2="295" y2="88" stroke="#ec4899" stroke-width="7" stroke-linecap="round"/>
+  <!-- key card -->
+  <rect x="290" y="84" width="20" height="12" fill="#fcd34d" rx="2"/>
+  <rect x="292" y="86" width="16" height="2" fill="#f59e0b"/>
+  <!-- guest -->
+  <circle cx="360" cy="58" r="12" fill="#fb923c"/>
+  <rect x="351" y="70" width="18" height="28" fill="#1d4ed8"/>
+  <!-- guest arm receiving -->
+  <line x1="351" y1="80" x2="314" y2="88" stroke="#1d4ed8" stroke-width="7" stroke-linecap="round"/>
+  <!-- potted plant -->
+  <rect x="520" y="100" width="20" height="30" fill="#6b7280" rx="2"/>
+  <circle cx="530" cy="95" r="18" fill="#22c55e"/>
+  <circle cx="518" cy="100" r="12" fill="#16a34a"/>
+  <circle cx="542" cy="100" r="12" fill="#16a34a"/>
+  <!-- label -->
+  <rect x="0" y="158" width="600" height="22" fill="rgba(0,0,0,.45)"/>
+  <text x="300" y="173" text-anchor="middle" fill="#fff" font-size="12" font-family="Arial">Hotel Reception — A receptionist handing a key card to a guest</text>
+</svg>`,
+  text:'Look at the photo and choose the statement that best describes what you see.',
+  tts:'Look at the photo. A hotel receptionist is handing a key card to a guest who is standing at the front desk.',
+  options:['(A) A receptionist is handing a key card to a guest.',
+           '(B) A guest is checking out and returning a room key.',
+           '(C) Hotel staff are cleaning the lobby area.',
+           '(D) A manager is reviewing paperwork at the desk.'],
+  answer:0
+},
+
+// ===== PART 2: Question-Response (Q7-31) =====
+{
+  id:7, part:2, partName:'Part 2 應答問題',
+  tts:'When is the deadline for submitting the quarterly report?',
+  text:'Question: When is the deadline for submitting the quarterly report?',
+  options:['(A) It\'s due by the end of this Friday.',
+           '(B) The report covers January through March.',
+           '(C) We submitted it last week.'],
+  answer:0
+},
+{
+  id:8, part:2, partName:'Part 2 應答問題',
+  tts:'Could you recommend a good restaurant near the office?',
+  text:'Question: Could you recommend a good restaurant near the office?',
+  options:['(A) Yes, the food was excellent.',
+           '(B) There\'s a great Italian place on Fifth Avenue.',
+           '(C) The office is on the third floor.'],
+  answer:1
+},
+{
+  id:9, part:2, partName:'Part 2 應答問題',
+  tts:'Has the shipment from the supplier arrived yet?',
+  text:'Question: Has the shipment from the supplier arrived yet?',
+  options:['(A) The freight was delayed due to inclement weather.',
+           '(B) We placed the order last Tuesday.',
+           '(C) The supplier is located in Taipei.'],
+  answer:0
+},
+{
+  id:10, part:2, partName:'Part 2 應答問題',
+  tts:'Who will be filling in for Ms. Chen while she\'s on leave?',
+  text:'Question: Who will be filling in for Ms. Chen while she\'s on leave?',
+  options:['(A) Her leave starts next Monday.',
+           '(B) Mr. Kim from the marketing team will cover for her.',
+           '(C) Yes, she has taken time off before.'],
+  answer:1
+},
+{
+  id:11, part:2, partName:'Part 2 應答問題',
+  tts:'Why was the conference postponed?',
+  text:'Question: Why was the conference postponed?',
+  options:['(A) The conference center is on Main Street.',
+           '(B) Several key speakers were unavailable on that date.',
+           '(C) It will be rescheduled for next quarter.'],
+  answer:1
+},
+{
+  id:12, part:2, partName:'Part 2 應答問題',
+  tts:'Can you wrap up the proposal by Thursday afternoon?',
+  text:'Question: Can you wrap up the proposal by Thursday afternoon?',
+  options:['(A) I should be able to finish it by then.',
+           '(B) The proposal was approved last week.',
+           '(C) Thursday is a public holiday.'],
+  answer:0
+},
+{
+  id:13, part:2, partName:'Part 2 應答問題',
+  tts:'Where should I submit the expense reimbursement form?',
+  text:'Question: Where should I submit the expense reimbursement form?',
+  options:['(A) The form is available on the intranet.',
+           '(B) You can hand it to the accounting department.',
+           '(C) Reimbursements are processed monthly.'],
+  answer:1
+},
+{
+  id:14, part:2, partName:'Part 2 應答問題',
+  tts:'Have you looked into the new software for inventory management?',
+  text:'Question: Have you looked into the new software for inventory management?',
+  options:['(A) The inventory was updated yesterday.',
+           '(B) Yes, I\'ve reviewed the demo and it looks promising.',
+           '(C) Software licenses are expensive.'],
+  answer:1
+},
+{
+  id:15, part:2, partName:'Part 2 應答問題',
+  tts:'Is parking available at the new office premises?',
+  text:'Question: Is parking available at the new office premises?',
+  options:['(A) Yes, there\'s a basement parking lot with 50 spaces.',
+           '(B) The office is accessible by subway.',
+           '(C) Parking fees are reimbursable.'],
+  answer:0
+},
+{
+  id:16, part:2, partName:'Part 2 應答問題',
+  tts:'How often does the team hold its status meetings?',
+  text:'Question: How often does the team hold its status meetings?',
+  options:['(A) Every Monday morning at nine o\'clock.',
+           '(B) The meeting was very productive.',
+           '(C) Our team has twelve members.'],
+  answer:0
+},
+{
+  id:17, part:2, partName:'Part 2 應答問題',
+  tts:'Which vendor did we select for the office renovation?',
+  text:'Question: Which vendor did we select for the office renovation?',
+  options:['(A) The renovation starts in April.',
+           '(B) BuildRight Construction won the bid.',
+           '(C) Renovations take about three months.'],
+  answer:1
+},
+{
+  id:18, part:2, partName:'Part 2 應答問題',
+  tts:'Would you like me to go over the contract terms with you?',
+  text:'Question: Would you like me to go over the contract terms with you?',
+  options:['(A) The contract was signed yesterday.',
+           '(B) That would be very helpful, thank you.',
+           '(C) The terms expire in December.'],
+  answer:1
+},
+{
+  id:19, part:2, partName:'Part 2 應答問題',
+  tts:'Did the client confirm attendance at the product launch?',
+  text:'Question: Did the client confirm attendance at the product launch?',
+  options:['(A) The launch is scheduled for next Friday.',
+           '(B) Yes, they confirmed three representatives will attend.',
+           '(C) Product launches require advance planning.'],
+  answer:1
+},
+{
+  id:20, part:2, partName:'Part 2 應答問題',
+  tts:'What time does the express delivery service close?',
+  text:'Question: What time does the express delivery service close?',
+  options:['(A) The courier picks up packages before six p.m.',
+           '(B) We sent the parcel this morning.',
+           '(C) Delivery takes two to three business days.'],
+  answer:0
+},
+{
+  id:21, part:2, partName:'Part 2 應答問題',
+  tts:'Should we place an advertisement in the local newspaper?',
+  text:'Question: Should we place an advertisement in the local newspaper?',
+  options:['(A) The newspaper is delivered every morning.',
+           '(B) Actually, digital marketing might be more effective.',
+           '(C) Advertisements should be concise.'],
+  answer:1
+},
+{
+  id:22, part:2, partName:'Part 2 應答問題',
+  tts:'Do you know who handles the procurement for office supplies?',
+  text:'Question: Do you know who handles the procurement for office supplies?',
+  options:['(A) Office supplies are on the second shelf.',
+           '(B) That would be Sandra in the facilities team.',
+           '(C) Procurement takes about a week.'],
+  answer:1
+},
+{
+  id:23, part:2, partName:'Part 2 應答問題',
+  tts:'When will the new product prototype be ready for review?',
+  text:'Question: When will the new product prototype be ready for review?',
+  options:['(A) The engineering team expects it by end of month.',
+           '(B) Prototypes require extensive testing.',
+           '(C) The review meeting is on Thursday.'],
+  answer:0
+},
+{
+  id:24, part:2, partName:'Part 2 應答問題',
+  tts:'Is the training session mandatory for all employees?',
+  text:'Question: Is the training session mandatory for all employees?',
+  options:['(A) The training covers safety procedures.',
+           '(B) Yes, attendance is required regardless of your department.',
+           '(C) Training was held last quarter too.'],
+  answer:1
+},
+{
+  id:25, part:2, partName:'Part 2 應答問題',
+  tts:'Can the project deadline be extended by a few days?',
+  text:'Question: Can the project deadline be extended by a few days?',
+  options:['(A) The project involves multiple teams.',
+           '(B) I\'ll check with the client and get back to you.',
+           '(C) Deadlines should always be met.'],
+  answer:1
+},
+{
+  id:26, part:2, partName:'Part 2 應答問題',
+  tts:'Who approved the budget for the new marketing campaign?',
+  text:'Question: Who approved the budget for the new marketing campaign?',
+  options:['(A) The campaign launches next month.',
+           '(B) The CFO signed off on it yesterday.',
+           '(C) Marketing budgets vary by quarter.'],
+  answer:1
+},
+{
+  id:27, part:2, partName:'Part 2 應答問題',
+  tts:'Would you prefer the window seat or the aisle seat on the flight?',
+  text:'Question: Would you prefer the window seat or the aisle seat on the flight?',
+  options:['(A) The flight departs at eight a.m.',
+           '(B) I prefer the aisle seat for easy access.',
+           '(C) Business class is more comfortable.'],
+  answer:1
+},
+{
+  id:28, part:2, partName:'Part 2 應答問題',
+  tts:'Has the annual audit been completed?',
+  text:'Question: Has the annual audit been completed?',
+  options:['(A) The auditors finished their review last Friday.',
+           '(B) Audits are conducted every year.',
+           '(C) The accounting team handles financial matters.'],
+  answer:0
+},
+{
+  id:29, part:2, partName:'Part 2 應答問題',
+  tts:'Shouldn\'t we notify the staff about the upcoming restructuring?',
+  text:'Question: Shouldn\'t we notify the staff about the upcoming restructuring?',
+  options:['(A) The restructuring affects two departments.',
+           '(B) Management plans to send an announcement on Monday.',
+           '(C) Staff meetings are held monthly.'],
+  answer:1
+},
+{
+  id:30, part:2, partName:'Part 2 應答問題',
+  tts:'Where can I find the updated employee handbook?',
+  text:'Question: Where can I find the updated employee handbook?',
+  options:['(A) It\'s been uploaded to the company intranet portal.',
+           '(B) The handbook was revised last year.',
+           '(C) HR distributes it during orientation.'],
+  answer:0
+},
+{
+  id:31, part:2, partName:'Part 2 應答問題',
+  tts:'Why don\'t we invite the client to tour our new facility?',
+  text:'Question: Why don\'t we invite the client to tour our new facility?',
+  options:['(A) The facility opened three months ago.',
+           '(B) That\'s a great idea — I\'ll send them an invitation.',
+           '(C) Tours are available on weekdays only.'],
+  answer:1
+},
+
+// ===== PART 3: Short Conversations (Q32-40) =====
+// Conversation 1: Project deadline
+{
+  id:32, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境</div>
+  <div class="dialogue">
+    <p><span class="speaker">Manager (W):</span> I just received word that the client wants the project delivered two weeks ahead of schedule. That means we need to expedite everything.</p>
+    <p><span class="speaker">Employee (M):</span> That's quite a constraint. I'll need to coordinate with the design and engineering teams to see what's feasible.</p>
+    <p><span class="speaker">Manager (W):</span> Please give me a preliminary assessment by tomorrow morning. We can't afford any disruption at this stage.</p>
+  </div>`,
+  tts:'Manager: I just received word that the client wants the project delivered two weeks ahead of schedule. That means we need to expedite everything. Employee: That\'s quite a constraint. I\'ll need to coordinate with the design and engineering teams to see what\'s feasible. Manager: Please give me a preliminary assessment by tomorrow morning. We can\'t afford any disruption at this stage.',
+  text:'What does the manager ask the employee to do?',
+  options:['(A) Contact the client directly about the deadline.',
+           '(B) Provide an initial assessment by tomorrow morning.',
+           '(C) Hire additional staff to accelerate the project.',
+           '(D) Cancel the project and renegotiate the contract.'],
+  answer:1
+},
+{
+  id:33, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境（同上）</div>
+  <div class="dialogue">
+    <p><span class="speaker">Manager (W):</span> I just received word that the client wants the project delivered two weeks ahead of schedule. That means we need to expedite everything.</p>
+    <p><span class="speaker">Employee (M):</span> That's quite a constraint. I'll need to coordinate with the design and engineering teams to see what's feasible.</p>
+    <p><span class="speaker">Manager (W):</span> Please give me a preliminary assessment by tomorrow morning. We can't afford any disruption at this stage.</p>
+  </div>`,
+  tts:'Same conversation as before.',
+  text:'What does the employee say he needs to do?',
+  options:['(A) Submit the final report to the client.',
+           '(B) Coordinate with the design and engineering teams.',
+           '(C) Review the project budget with the CFO.',
+           '(D) Postpone the project timeline by two weeks.'],
+  answer:1
+},
+{
+  id:34, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境（同上）</div>
+  <div class="dialogue">
+    <p><span class="speaker">Manager (W):</span> I just received word that the client wants the project delivered two weeks ahead of schedule. That means we need to expedite everything.</p>
+    <p><span class="speaker">Employee (M):</span> That's quite a constraint. I'll need to coordinate with the design and engineering teams to see what's feasible.</p>
+    <p><span class="speaker">Manager (W):</span> Please give me a preliminary assessment by tomorrow morning. We can't afford any disruption at this stage.</p>
+  </div>`,
+  tts:'Same conversation as before.',
+  text:'What is the manager concerned about?',
+  options:['(A) The project going over budget.',
+           '(B) The team lacking sufficient skills.',
+           '(C) Any disruption to the current progress.',
+           '(D) The client canceling the contract.'],
+  answer:2
+},
+// Conversation 2: Customer service
+{
+  id:35, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境</div>
+  <div class="dialogue">
+    <p><span class="speaker">Customer (M):</span> I purchased this item online last week, but when I opened the package, the screen was cracked. I'd like a refund or a replacement.</p>
+    <p><span class="speaker">Staff (W):</span> I sincerely apologize for the inconvenience. If you have the receipt and the original packaging, we can process an exchange right away.</p>
+    <p><span class="speaker">Customer (M):</span> I have the receipt, but I already disposed of the outer box. Will that be a problem?</p>
+    <p><span class="speaker">Staff (W):</span> Not at all. The receipt is sufficient. I'll retrieve a new unit from the back for you.</p>
+  </div>`,
+  tts:'Customer: I purchased this item online last week, but when I opened the package, the screen was cracked. I\'d like a refund or a replacement. Staff: I sincerely apologize for the inconvenience. If you have the receipt and the original packaging, we can process an exchange right away. Customer: I have the receipt, but I already disposed of the outer box. Will that be a problem? Staff: Not at all. The receipt is sufficient. I\'ll retrieve a new unit from the back for you.',
+  text:'Why did the customer come to the store?',
+  options:['(A) To pick up an online order.',
+           '(B) To exchange a damaged item.',
+           '(C) To request a price adjustment.',
+           '(D) To apply for a store membership.'],
+  answer:1
+},
+{
+  id:36, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境（同上）</div>
+  <div class="dialogue">
+    <p><span class="speaker">Customer (M):</span> I purchased this item online last week, but when I opened the package, the screen was cracked. I'd like a refund or a replacement.</p>
+    <p><span class="speaker">Staff (W):</span> I sincerely apologize for the inconvenience. If you have the receipt and the original packaging, we can process an exchange right away.</p>
+    <p><span class="speaker">Customer (M):</span> I have the receipt, but I already disposed of the outer box. Will that be a problem?</p>
+    <p><span class="speaker">Staff (W):</span> Not at all. The receipt is sufficient. I'll retrieve a new unit from the back for you.</p>
+  </div>`,
+  tts:'Same conversation as before.',
+  text:'What does the customer NOT have?',
+  options:['(A) The purchase receipt.',
+           '(B) The damaged item.',
+           '(C) The original outer packaging.',
+           '(D) The order confirmation number.'],
+  answer:2
+},
+{
+  id:37, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境（同上）</div>
+  <div class="dialogue">
+    <p><span class="speaker">Customer (M):</span> I purchased this item online last week, but when I opened the package, the screen was cracked. I'd like a refund or a replacement.</p>
+    <p><span class="speaker">Staff (W):</span> I sincerely apologize for the inconvenience. If you have the receipt and the original packaging, we can process an exchange right away.</p>
+    <p><span class="speaker">Customer (M):</span> I have the receipt, but I already disposed of the outer box. Will that be a problem?</p>
+    <p><span class="speaker">Staff (W):</span> Not at all. The receipt is sufficient. I'll retrieve a new unit from the back for you.</p>
+  </div>`,
+  tts:'Same conversation as before.',
+  text:'What will the staff member do next?',
+  options:['(A) Issue a full refund to the customer.',
+           '(B) Call the online store to verify the order.',
+           '(C) Get a new unit from the stockroom.',
+           '(D) Ask the customer to return the following day.'],
+  answer:2
+},
+// Conversation 3: Restructuring
+{
+  id:38, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境</div>
+  <div class="dialogue">
+    <p><span class="speaker">Colleague A (W):</span> Did you hear about the restructuring? It sounds like the sales and marketing divisions will be consolidated into one department.</p>
+    <p><span class="speaker">Colleague B (M):</span> Yes, I did. Apparently, it's to eliminate redundancy and bolster overall efficiency. Some positions may become redundant though.</p>
+    <p><span class="speaker">Colleague A (W):</span> I hope management will be transparent about the process. Uncertainty like this can be really unsettling for the staff.</p>
+  </div>`,
+  tts:'Colleague A: Did you hear about the restructuring? It sounds like the sales and marketing divisions will be consolidated into one department. Colleague B: Yes, I did. Apparently, it\'s to eliminate redundancy and bolster overall efficiency. Some positions may become redundant though. Colleague A: I hope management will be transparent about the process. Uncertainty like this can be really unsettling for the staff.',
+  text:'What changes are being made at the company?',
+  options:['(A) A new product line is being launched.',
+           '(B) The company is relocating its headquarters.',
+           '(C) Two divisions are being merged into one.',
+           '(D) Several senior managers are retiring.'],
+  answer:2
+},
+{
+  id:39, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境（同上）</div>
+  <div class="dialogue">
+    <p><span class="speaker">Colleague A (W):</span> Did you hear about the restructuring? It sounds like the sales and marketing divisions will be consolidated into one department.</p>
+    <p><span class="speaker">Colleague B (M):</span> Yes, I did. Apparently, it's to eliminate redundancy and bolster overall efficiency. Some positions may become redundant though.</p>
+    <p><span class="speaker">Colleague A (W):</span> I hope management will be transparent about the process. Uncertainty like this can be really unsettling for the staff.</p>
+  </div>`,
+  tts:'Same conversation as before.',
+  text:'According to Colleague B, what is the purpose of the restructuring?',
+  options:['(A) To improve employee benefits.',
+           '(B) To increase the marketing budget.',
+           '(C) To eliminate redundancy and improve efficiency.',
+           '(D) To bring in new management talent.'],
+  answer:2
+},
+{
+  id:40, part:3, partName:'Part 3 簡短對話',
+  ctx:`<div class="ctx-title">對話情境（同上）</div>
+  <div class="dialogue">
+    <p><span class="speaker">Colleague A (W):</span> Did you hear about the restructuring? It sounds like the sales and marketing divisions will be consolidated into one department.</p>
+    <p><span class="speaker">Colleague B (M):</span> Yes, I did. Apparently, it's to eliminate redundancy and bolster overall efficiency. Some positions may become redundant though.</p>
+    <p><span class="speaker">Colleague A (W):</span> I hope management will be transparent about the process. Uncertainty like this can be really unsettling for the staff.</p>
+  </div>`,
+  tts:'Same conversation as before.',
+  text:'What does Colleague A hope for?',
+  options:['(A) That all employees will keep their current positions.',
+           '(B) That management will be open and clear about the process.',
+           '(C) That the restructuring will be completed quickly.',
+           '(D) That new positions will be created for senior staff.'],
+  answer:1
+},
+
+// ===== PART 4: Short Talks (Q41-46) =====
+// Talk 1: Company announcement
+{
+  id:41, part:4, partName:'Part 4 簡短獨白',
+  ctx:`<div class="ctx-title">獨白內容</div>
+  <p>Good morning, everyone. I'd like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.</p>`,
+  tts:'Good morning, everyone. I\'d like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.',
+  text:'What achievement is being announced?',
+  options:['(A) The company is going public on the stock exchange.',
+           '(B) Record-breaking sales for three consecutive years.',
+           '(C) The launch of a new product line.',
+           '(D) A merger with a rival company.'],
+  answer:1
+},
+{
+  id:42, part:4, partName:'Part 4 簡短獨白',
+  ctx:`<div class="ctx-title">獨白內容（同上）</div>
+  <p>Good morning, everyone. I'd like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.</p>`,
+  tts:'Same talk as before.',
+  text:'What will employees receive in recognition of their performance?',
+  options:['(A) An extra week of paid vacation.',
+           '(B) A ten-percent salary bonus.',
+           '(C) Stock options in the company.',
+           '(D) An award at the annual banquet.'],
+  answer:1
+},
+{
+  id:43, part:4, partName:'Part 4 簡短獨白',
+  ctx:`<div class="ctx-title">獨白內容（同上）</div>
+  <p>Good morning, everyone. I'd like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.</p>`,
+  tts:'Same talk as before.',
+  text:'How will employees learn more about the new wellness benefit?',
+  options:['(A) Through a notice posted on the bulletin board.',
+           '(B) Via a company-wide email.',
+           '(C) At a town hall meeting next week.',
+           '(D) Through their direct managers.'],
+  answer:1
+},
+// Talk 2: Radio advertisement
+{
+  id:44, part:4, partName:'Part 4 簡短獨白',
+  ctx:`<div class="ctx-title">獨白內容</div>
+  <p>Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.</p>`,
+  tts:'Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.',
+  text:'What type of business is being advertised?',
+  options:['(A) A fitness center offering nutritional coaching.',
+           '(B) A grocery store specializing in organic and gourmet products.',
+           '(C) An online meal delivery service.',
+           '(D) A restaurant with farm-to-table cuisine.'],
+  answer:1
+},
+{
+  id:45, part:4, partName:'Part 4 簡短獨白',
+  ctx:`<div class="ctx-title">獨白內容（同上）</div>
+  <p>Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.</p>`,
+  tts:'Same talk as before.',
+  text:'What special offer is available this weekend?',
+  options:['(A) Free delivery on all online orders.',
+           '(B) Buy one, get one free on all produce.',
+           '(C) Twenty percent off nutritious snacks and beverages.',
+           '(D) A complimentary tasting event on Saturday.'],
+  answer:2
+},
+{
+  id:46, part:4, partName:'Part 4 簡短獨白',
+  ctx:`<div class="ctx-title">獨白內容（同上）</div>
+  <p>Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.</p>`,
+  tts:'Same talk as before.',
+  text:'What condition applies to the promotion?',
+  options:['(A) Only available to members with loyalty cards.',
+           '(B) Limited to the first fifty customers each day.',
+           '(C) Valid only until stocks run out.',
+           '(D) Requires a minimum purchase of fifty dollars.'],
+  answer:2
+},
+
+// ===== PART 5: Incomplete Sentences (Q47-77) =====
+{
+  id:47, part:5, partName:'Part 5 句子填空',
+  text:'The board unanimously agreed to _______ the new CEO from within the existing leadership team.',
+  options:['(A) nominate','(B) nomination','(C) nominated','(D) nominates'],
+  answer:0,
+  zh:'董事會一致同意從現有領導團隊中<b>提名</b>新任執行長。<br><small>🔑 nominate（提名）→ nomination（提名行為）</small>'
+},
+{
+  id:48, part:5, partName:'Part 5 句子填空',
+  text:'Employees are expected to _______ with all safety regulations outlined in the company handbook.',
+  options:['(A) comply','(B) compliance','(C) compliant','(D) complying'],
+  answer:0,
+  zh:'員工須<b>遵守</b>公司手冊中列出的所有安全規範。<br><small>🔑 comply with（遵守）→ in compliance with（符合；遵照）</small>'
+},
+{
+  id:49, part:5, partName:'Part 5 句子填空',
+  text:'The renovation project was completed on schedule, leaving all facilities completely _______.',
+  options:['(A) intact','(B) intactly','(C) intactness','(D) intacted'],
+  answer:0,
+  zh:'整修工程按時完成，所有設施完全保持<b>完好無損</b>。<br><small>🔑 intact（形容詞）= 完整的；未受損的</small>'
+},
+{
+  id:50, part:5, partName:'Part 5 句子填空',
+  text:'Sales figures have been _______ rising over the past six months, which greatly encouraged investors.',
+  options:['(A) consecutive','(B) consecutively','(C) consecutiveness','(D) consecutived'],
+  answer:1,
+  zh:'過去六個月銷售數字<b>持續地</b>上升，大大鼓舞了投資者。<br><small>🔑 修飾動詞 rising 須用副詞 consecutively（連續地）</small>'
+},
+{
+  id:51, part:5, partName:'Part 5 句子填空',
+  text:'Applicants must be _______ for at least three years of relevant work experience to apply for this position.',
+  options:['(A) eligible','(B) eligibly','(C) eligibility','(D) eligibly'],
+  answer:0,
+  zh:'申請此職位的人必須<b>符合資格</b>，具備至少三年相關工作經驗。<br><small>🔑 be eligible for（有資格獲得）= 符合申請資格條件</small>'
+},
+{
+  id:52, part:5, partName:'Part 5 句子填空',
+  text:'The manager was _______ to approve the budget increase without further justification from the team.',
+  options:['(A) reluctance','(B) reluctantly','(C) reluctant','(D) relucted'],
+  answer:2,
+  zh:'這位經理對於在沒有團隊進一步說明的情況下批准預算增加感到<b>不情願</b>。<br><small>🔑 be reluctant to V（不願意做某事）→ 接形容詞，非副詞</small>'
+},
+{
+  id:53, part:5, partName:'Part 5 句子填空',
+  text:'Please _______ from using personal devices during the training session.',
+  options:['(A) refrain','(B) restraint','(C) retract','(D) retain'],
+  answer:0,
+  zh:'在培訓課程期間，請<b>避免</b>使用個人裝置。<br><small>🔑 refrain from V-ing（克制；避免做某事）</small>'
+},
+{
+  id:54, part:5, partName:'Part 5 句子填空',
+  text:'The project manager was asked to _______ progress reports to all team leaders on a weekly basis.',
+  options:['(A) dispatch','(B) dispatching','(C) dispatched','(D) dispatcher'],
+  answer:0,
+  zh:'專案經理被要求每週<b>發送</b>進度報告給所有團隊領導人。<br><small>🔑 dispatch（派發；傳送）= 迅速地寄出或傳遞</small>'
+},
+{
+  id:55, part:5, partName:'Part 5 句子填空',
+  text:'_______ the heavy rain, the outdoor ceremony proceeded as planned.',
+  options:['(A) Although','(B) Despite','(C) However','(D) Because'],
+  answer:1,
+  zh:'<b>儘管</b>大雨，戶外典禮仍按計畫進行。<br><small>🔑 Despite + 名詞/V-ing（不接子句）；Although + 完整子句</small>'
+},
+{
+  id:56, part:5, partName:'Part 5 句子填空',
+  text:'The salary offer is _______ with industry standards and the candidate\'s level of experience.',
+  options:['(A) commensurate','(B) commensuration','(C) commensurately','(D) commensurated'],
+  answer:0,
+  zh:'薪資待遇與行業標準及應徵者的經驗水準<b>相稱</b>。<br><small>🔑 commensurate with（與…相稱；成比例）</small>'
+},
+{
+  id:57, part:5, partName:'Part 5 句子填空',
+  text:'The company decided to _______ its outdated inventory system with a modern cloud-based platform.',
+  options:['(A) revamp','(B) retrieve','(C) reiterate','(D) refund'],
+  answer:0,
+  zh:'公司決定以現代雲端平台<b>全面改造</b>過時的庫存系統。<br><small>🔑 revamp（大幅翻新；改造）= 改進現有事物</small>'
+},
+{
+  id:58, part:5, partName:'Part 5 句子填空',
+  text:'The new policy will take _______ immediately upon approval by the board of directors.',
+  options:['(A) affect','(B) effect','(C) effective','(D) effectively'],
+  answer:1,
+  zh:'新政策一經董事會批准，將立即<b>生效</b>。<br><small>🔑 take effect（生效）；affect 是動詞（影響）；effect 是名詞（效果/生效）</small>'
+},
+{
+  id:59, part:5, partName:'Part 5 句子填空',
+  text:'All staff members are _______ to complete the mandatory cybersecurity training by Friday.',
+  options:['(A) required','(B) entitled','(C) eligible','(D) subject'],
+  answer:0,
+  zh:'所有員工<b>必須</b>在週五之前完成強制性的網路安全培訓。<br><small>🔑 be required to V（被要求做）；be entitled to（有權利）；be eligible for（有資格）</small>'
+},
+{
+  id:60, part:5, partName:'Part 5 句子填空',
+  text:'The new marketing strategy aims to _______ customer engagement across all digital platforms.',
+  options:['(A) bolster','(B) dismiss','(C) omit','(D) forfeit'],
+  answer:0,
+  zh:'新的行銷策略旨在<b>強化</b>所有數位平台上的客戶互動。<br><small>🔑 bolster（加強；支撐）= 使更強或更有效</small>'
+},
+{
+  id:61, part:5, partName:'Part 5 句子填空',
+  text:'Due to _______ demand, the product launch has been moved to an earlier date.',
+  options:['(A) unprecedented','(B) unprecedentedly','(C) precedented','(D) precedent'],
+  answer:0,
+  zh:'由於<b>空前的</b>需求，產品發布日期已提前。<br><small>🔑 unprecedented（前所未有的）= 史無前例的需求</small>'
+},
+{
+  id:62, part:5, partName:'Part 5 句子填空',
+  text:'The _______ manager will oversee all operations until a permanent director is appointed.',
+  options:['(A) interim','(B) interlope','(C) interval','(D) internal'],
+  answer:0,
+  zh:'在正式任命常任總監之前，<b>臨時</b>經理將監管所有業務。<br><small>🔑 interim（臨時的；過渡期的）= 正式任命前暫代</small>'
+},
+{
+  id:63, part:5, partName:'Part 5 句子填空',
+  text:'Employees who wish to _______ their subscriptions must do so before the end of the billing cycle.',
+  options:['(A) omit','(B) cancel','(C) forfeit','(D) lapse'],
+  answer:1,
+  zh:'希望<b>取消</b>訂閱的員工必須在計費週期結束前辦理。<br><small>🔑 cancel（取消）；forfeit（沒收；喪失權利）；lapse（失效）</small>'
+},
+{
+  id:64, part:5, partName:'Part 5 句子填空',
+  text:'The auditors found that the financial records were _______ maintained with no discrepancies.',
+  options:['(A) meticulously','(B) meticulous','(C) meticulousness','(D) meticulosed'],
+  answer:0,
+  zh:'審計人員發現財務記錄被<b>一絲不苟地</b>維護，沒有任何差異。<br><small>🔑 修飾動詞 maintained 須用副詞 meticulously（細心地）</small>'
+},
+{
+  id:65, part:5, partName:'Part 5 句子填空',
+  text:'The committee will _______ the candidates based on their qualifications and interview performance.',
+  options:['(A) assess','(B) assessment','(C) assessing','(D) assessed'],
+  answer:0,
+  zh:'委員會將根據資格和面試表現<b>評估</b>候選人。<br><small>🔑 assess（評估；評鑑）→ assessment（評估報告）</small>'
+},
+{
+  id:66, part:5, partName:'Part 5 句子填空',
+  text:'The company\'s _______ growth strategy focuses on expanding into emerging markets in Southeast Asia.',
+  options:['(A) sustainable','(B) sustainably','(C) sustainability','(D) sustaining'],
+  answer:0,
+  zh:'公司的<b>永續</b>成長策略著重於拓展東南亞新興市場。<br><small>🔑 修飾名詞 strategy 須用形容詞 sustainable（永續的）</small>'
+},
+{
+  id:67, part:5, partName:'Part 5 句子填空',
+  text:'The finance team drew _______ a detailed budget plan for the upcoming fiscal year.',
+  options:['(A) up','(B) out','(C) on','(D) in'],
+  answer:0,
+  zh:'財務團隊為即將到來的財政年度<b>擬定了</b>一份詳細的預算計畫。<br><small>🔑 draw up（起草；制定）= 正式擬定文件或計畫</small>'
+},
+{
+  id:68, part:5, partName:'Part 5 句子填空',
+  text:'The _______ review covered all departments and identified several areas for improvement.',
+  options:['(A) comprehend','(B) comprehension','(C) comprehensive','(D) comprehensively'],
+  answer:2,
+  zh:'這次<b>全面的</b>審查涵蓋了所有部門，並找出了幾個需要改善的地方。<br><small>🔑 修飾名詞 review 須用形容詞 comprehensive（全面的）</small>'
+},
+{
+  id:69, part:5, partName:'Part 5 句子填空',
+  text:'As a _______ of the supply chain disruption, the product launch was postponed by two months.',
+  options:['(A) consequence','(B) consequent','(C) consequently','(D) consequential'],
+  answer:0,
+  zh:'由於供應鏈中斷的<b>後果</b>，產品發布延後了兩個月。<br><small>🔑 as a consequence（因此；作為後果）= as a result</small>'
+},
+{
+  id:70, part:5, partName:'Part 5 句子填空',
+  text:'The new HR director is an _______ expert in talent acquisition and employee retention.',
+  options:['(A) eminence','(B) eminently','(C) eminent','(D) eminent\'s'],
+  answer:2,
+  zh:'新任人資總監是人才招募和員工留任領域的<b>傑出</b>專家。<br><small>🔑 修飾名詞 expert 須用形容詞 eminent（傑出的；著名的）</small>'
+},
+{
+  id:71, part:5, partName:'Part 5 句子填空',
+  text:'You may _______ your reward points for a complimentary hotel night on your next stay.',
+  options:['(A) redeem','(B) redemption','(C) redeemable','(D) redeems'],
+  answer:0,
+  zh:'您可以在下次住宿時<b>兌換</b>您的獎勵積分換取一晚免費住宿。<br><small>🔑 redeem（兌換；贖回）；redeemable（可兌換的，形容詞）</small>'
+},
+{
+  id:72, part:5, partName:'Part 5 句子填空',
+  text:'The board _______ a new remote-work policy to attract top talent from across the country.',
+  options:['(A) adoption','(B) adopted','(C) adoptive','(D) adopting'],
+  answer:1,
+  zh:'董事會<b>採納了</b>一項新的遠端工作政策，以吸引來自全國各地的頂尖人才。<br><small>🔑 過去式動詞 adopted；adopt（採用）→ adoption（採納，名詞）</small>'
+},
+{
+  id:73, part:5, partName:'Part 5 句子填空',
+  text:'Please _______ the availability of the venue before confirming the event date with the client.',
+  options:['(A) evaluate','(B) ascertain','(C) abandon','(D) ascent'],
+  answer:1,
+  zh:'在與客戶確認活動日期之前，請<b>確認</b>場地的可用情況。<br><small>🔑 ascertain（確認；查明）= 主動調查並確認事實</small>'
+},
+{
+  id:74, part:5, partName:'Part 5 句子填空',
+  text:'The company\'s success in the competitive market is a _______ to the team\'s expertise and dedication.',
+  options:['(A) testament','(B) contrast','(C) remedy','(D) provision'],
+  answer:0,
+  zh:'公司在競爭激烈的市場中取得的成功，是對團隊專業能力和奉獻精神的<b>最佳證明</b>。<br><small>🔑 testament to（……的有力證明）</small>'
+},
+{
+  id:75, part:5, partName:'Part 5 句子填空',
+  text:'_______ there is a labor dispute, all production activities will be suspended immediately.',
+  options:['(A) Although','(B) Whereas','(C) Should','(D) Therefore'],
+  answer:2,
+  zh:'<b>萬一</b>發生勞資糾紛，所有生產活動將立即暫停。<br><small>🔑 Should（倒裝條件句）= If there should be…，表示假設情況</small>'
+},
+{
+  id:76, part:5, partName:'Part 5 句子填空',
+  text:'The harsh winter weather _______ affected the construction timeline by several weeks.',
+  options:['(A) adverse','(B) adversity','(C) adversely','(D) adversarial'],
+  answer:2,
+  zh:'嚴酷的冬季天氣<b>負面地</b>影響了施工時程，延誤了數週。<br><small>🔑 修飾動詞 affected 須用副詞 adversely（不利地）</small>'
+},
+{
+  id:77, part:5, partName:'Part 5 句子填空',
+  text:'Revenue has grown _______ over the past five years, thanks to our expansion into new markets.',
+  options:['(A) consistent','(B) consistency','(C) consistently','(D) consistentness'],
+  answer:2,
+  zh:'得益於我們向新市場的拓展，過去五年收入<b>持續地</b>增長。<br><small>🔑 修飾動詞 grown 須用副詞 consistently（一致地；持續地）</small>'
+},
+
+// ===== PART 6: Text Completion (Q78-89) =====
+// Passage 1: Office renovation memo
+{
+  id:67, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>To:</strong> All Staff<br><strong>From:</strong> Facilities Management<br><strong>Subject:</strong> Office Renovation Schedule<br><br>
+Please be informed that the office renovation project will commence on Monday, April 7th. During this period, staff on floors three and four will be relocated to the <u>&nbsp;&nbsp;(67)&nbsp;&nbsp;</u> conference center on the second floor. We apologize for any inconvenience this may cause.<br><br>
+All departments are requested to <u>&nbsp;&nbsp;(68)&nbsp;&nbsp;</u> their essential equipment and files to the temporary workspace no later than Friday, April 4th. The renovation is expected to take approximately three weeks. <u>&nbsp;&nbsp;(69)&nbsp;&nbsp;</u>, certain areas may still be inaccessible during the final stages of the project. Updates will be communicated regularly via email.<br><br>
+We appreciate your cooperation and patience. For any queries, please contact the facilities team at extension 305. We are committed to completing this project with minimal <u>&nbsp;&nbsp;(70)&nbsp;&nbsp;</u> to daily operations.`,
+  text:'Choose the best word for blank (67).',
+  options:['(A) adjacent','(B) prominent','(C) eligible','(D) surplus'],
+  answer:0,
+  zh:'空格 (67) 答案：<b>adjacent（鄰近的）</b><br>三、四樓員工將被遷至二樓<b>鄰近的</b>會議中心。<br><small>🔑 adjacent to（緊鄰；相鄰）</small>'
+},
+{
+  id:68, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>To:</strong> All Staff<br><strong>From:</strong> Facilities Management<br><strong>Subject:</strong> Office Renovation Schedule<br><br>
+Please be informed that the office renovation project will commence on Monday, April 7th. During this period, staff on floors three and four will be relocated to the <u>(adjacent)</u> conference center on the second floor. We apologize for any inconvenience this may cause.<br><br>
+All departments are requested to <u>&nbsp;&nbsp;(68)&nbsp;&nbsp;</u> their essential equipment and files to the temporary workspace no later than Friday, April 4th. The renovation is expected to take approximately three weeks. <u>&nbsp;&nbsp;(69)&nbsp;&nbsp;</u>, certain areas may still be inaccessible during the final stages of the project. Updates will be communicated regularly via email.<br><br>
+We appreciate your cooperation and patience. For any queries, please contact the facilities team at extension 305. We are committed to completing this project with minimal <u>&nbsp;&nbsp;(70)&nbsp;&nbsp;</u> to daily operations.`,
+  text:'Choose the best word for blank (68).',
+  options:['(A) eliminate','(B) transfer','(C) forfeit','(D) scrutinize'],
+  answer:1,
+  zh:'空格 (68) 答案：<b>transfer（轉移）</b><br>各部門須將設備和文件<b>轉移</b>至臨時工作空間。<br><small>🔑 transfer（搬移；轉移）；forfeit（沒收）；scrutinize（仔細審查）</small>'
+},
+{
+  id:69, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>To:</strong> All Staff<br><strong>From:</strong> Facilities Management<br><strong>Subject:</strong> Office Renovation Schedule<br><br>
+Please be informed that the office renovation project will commence on Monday, April 7th. During this period, staff on floors three and four will be relocated to the <u>(adjacent)</u> conference center on the second floor. We apologize for any inconvenience this may cause.<br><br>
+All departments are requested to <u>(transfer)</u> their essential equipment and files to the temporary workspace no later than Friday, April 4th. The renovation is expected to take approximately three weeks. <u>&nbsp;&nbsp;(69)&nbsp;&nbsp;</u>, certain areas may still be inaccessible during the final stages of the project. Updates will be communicated regularly via email.<br><br>
+We appreciate your cooperation and patience. For any queries, please contact the facilities team at extension 305. We are committed to completing this project with minimal <u>&nbsp;&nbsp;(70)&nbsp;&nbsp;</u> to daily operations.`,
+  text:'Choose the best word or phrase for blank (69).',
+  options:['(A) Therefore','(B) Nevertheless','(C) Provided that','(D) As a result'],
+  answer:1,
+  zh:'空格 (69) 答案：<b>Nevertheless（儘管如此）</b><br>整修預計需三週，<b>儘管如此</b>，某些區域在最後階段仍可能無法進入。<br><small>🔑 Nevertheless（表轉折）= 儘管如此；前後形成對比關係</small>'
+},
+{
+  id:70, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>To:</strong> All Staff<br><strong>From:</strong> Facilities Management<br><strong>Subject:</strong> Office Renovation Schedule<br><br>
+Please be informed that the office renovation project will commence on Monday, April 7th. During this period, staff on floors three and four will be relocated to the <u>(adjacent)</u> conference center on the second floor. We apologize for any inconvenience this may cause.<br><br>
+All departments are requested to <u>(transfer)</u> their essential equipment and files to the temporary workspace no later than Friday, April 4th. The renovation is expected to take approximately three weeks. <u>(Nevertheless)</u>, certain areas may still be inaccessible during the final stages of the project. Updates will be communicated regularly via email.<br><br>
+We appreciate your cooperation and patience. For any queries, please contact the facilities team at extension 305. We are committed to completing this project with minimal <u>&nbsp;&nbsp;(70)&nbsp;&nbsp;</u> to daily operations.`,
+  text:'Choose the best word for blank (70).',
+  options:['(A) disruption','(B) assessment','(C) enrollment','(D) delegation'],
+  answer:0,
+  zh:'空格 (70) 答案：<b>disruption（干擾；中斷）</b><br>我們致力於以最小的<b>干擾</b>完成這項工程。<br><small>🔑 disruption（干擾正常運作）；with minimal disruption（將影響降到最低）</small>'
+},
+// Passage 2: Expense reimbursement
+{
+  id:71, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>EXPENSE REIMBURSEMENT POLICY — UPDATED GUIDELINES</strong><br><br>
+Effective immediately, all employees seeking reimbursement for business-related expenses must submit their claims within 30 days of the expense date. Claims submitted after this period will not be <u>&nbsp;&nbsp;(71)&nbsp;&nbsp;</u> for reimbursement.<br><br>
+To expedite processing, employees are <u>&nbsp;&nbsp;(72)&nbsp;&nbsp;</u> to attach original receipts for all expenses exceeding $50. Digital copies are acceptable for amounts below this threshold. Claims that do not include the necessary documentation will be <u>&nbsp;&nbsp;(73)&nbsp;&nbsp;</u> automatically.<br><br>
+The Finance Department is working to <u>&nbsp;&nbsp;(74)&nbsp;&nbsp;</u> the reimbursement process. Going forward, approved claims will be settled within five business days. Please direct all inquiries to finance@company.com.`,
+  text:'Choose the best word for blank (71).',
+  options:['(A) entitled','(B) eligible','(C) available','(D) applicable'],
+  answer:1,
+  zh:'空格 (71) 答案：<b>eligible（符合資格的）</b><br>逾期提交的申請將不<b>符合</b>報銷資格。<br><small>🔑 eligible for reimbursement（有資格申請報銷）；entitled to（有法律權利）</small>'
+},
+{
+  id:72, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>EXPENSE REIMBURSEMENT POLICY — UPDATED GUIDELINES</strong><br><br>
+Effective immediately, all employees seeking reimbursement for business-related expenses must submit their claims within 30 days of the expense date. Claims submitted after this period will not be <u>(eligible)</u> for reimbursement.<br><br>
+To expedite processing, employees are <u>&nbsp;&nbsp;(72)&nbsp;&nbsp;</u> to attach original receipts for all expenses exceeding $50. Digital copies are acceptable for amounts below this threshold. Claims that do not include the necessary documentation will be <u>&nbsp;&nbsp;(73)&nbsp;&nbsp;</u> automatically.<br><br>
+The Finance Department is working to <u>&nbsp;&nbsp;(74)&nbsp;&nbsp;</u> the reimbursement process. Going forward, approved claims will be settled within five business days. Please direct all inquiries to finance@company.com.`,
+  text:'Choose the best word for blank (72).',
+  options:['(A) encouraged','(B) prohibited','(C) required','(D) forbidden'],
+  answer:2,
+  zh:'空格 (72) 答案：<b>required（必須的）</b><br>員工<b>必須</b>附上超過 50 美元費用的原始收據。<br><small>🔑 be required to V（被要求；必須做）= 義務性要求</small>'
+},
+{
+  id:73, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>EXPENSE REIMBURSEMENT POLICY — UPDATED GUIDELINES</strong><br><br>
+Effective immediately, all employees seeking reimbursement for business-related expenses must submit their claims within 30 days of the expense date. Claims submitted after this period will not be <u>(eligible)</u> for reimbursement.<br><br>
+To expedite processing, employees are <u>(required)</u> to attach original receipts for all expenses exceeding $50. Digital copies are acceptable for amounts below this threshold. Claims that do not include the necessary documentation will be <u>&nbsp;&nbsp;(73)&nbsp;&nbsp;</u> automatically.<br><br>
+The Finance Department is working to <u>&nbsp;&nbsp;(74)&nbsp;&nbsp;</u> the reimbursement process. Going forward, approved claims will be settled within five business days. Please direct all inquiries to finance@company.com.`,
+  text:'Choose the best word for blank (73).',
+  options:['(A) submitted','(B) approved','(C) rejected','(D) assessed'],
+  answer:2,
+  zh:'空格 (73) 答案：<b>rejected（被拒絕）</b><br>未附必要文件的申請將自動被<b>退回</b>。<br><small>🔑 rejected（被拒絕；被退回）；submitted（已提交）；approved（已批准）</small>'
+},
+{
+  id:74, part:6, partName:'Part 6 篇章填空',
+  passage:`<strong>EXPENSE REIMBURSEMENT POLICY — UPDATED GUIDELINES</strong><br><br>
+Effective immediately, all employees seeking reimbursement for business-related expenses must submit their claims within 30 days of the expense date. Claims submitted after this period will not be <u>(eligible)</u> for reimbursement.<br><br>
+To expedite processing, employees are <u>(required)</u> to attach original receipts for all expenses exceeding $50. Digital copies are acceptable for amounts below this threshold. Claims that do not include the necessary documentation will be <u>(rejected)</u> automatically.<br><br>
+The Finance Department is working to <u>&nbsp;&nbsp;(74)&nbsp;&nbsp;</u> the reimbursement process. Going forward, approved claims will be settled within five business days. Please direct all inquiries to finance@company.com.`,
+  text:'Choose the best word for blank (74).',
+  options:['(A) complicate','(B) streamline','(C) consolidate','(D) reinstate'],
+  answer:1,
+  zh:'空格 (74) 答案：<b>streamline（精簡；優化）</b><br>財務部門正致力於<b>簡化</b>報銷流程。<br><small>🔑 streamline（使流程更有效率）；consolidate（整合；鞏固）</small>'
+},
+
+// ===== PART 7: Reading Comprehension (Q75-100) =====
+// Passage 1: Job Advertisement (Q75-80)
+{
+  id:75, part:7, partName:'Part 7 閱讀測驗',
+  passage:`<strong>JOB ADVERTISEMENT</strong><br><br>
+<strong>Position: Senior Sales Representative</strong><br>
+<strong>Company: Meridian Global Solutions</strong><br><br>
+Meridian Global Solutions, a prestigious firm with operations in over 30 countries, is seeking an experienced and results-driven Senior Sales Representative to join our expanding Asia-Pacific team.<br><br>
+<strong>Key Responsibilities:</strong><br>
+• Develop and maintain client relationships to meet quarterly sales quota<br>
+• Identify and pursue new business opportunities in emerging markets<br>
+• Prepare and deliver persuasive sales presentations to prospective clients<br>
+• Collaborate with cross-functional teams to ensure customer satisfaction<br><br>
+<strong>Requirements:</strong><br>
+• Minimum 5 years of consecutive sales experience in a B2B environment<br>
+• Demonstrated proficiency in CRM software and data analysis tools<br>
+• Salary is commensurate with experience and industry benchmarks<br>
+• Eligible candidates must hold a valid work permit for the region<br><br>
+To apply, send your résumé and a cover letter to careers@meridianglobal.com by March 31st.`,
+  text:'What type of company is Meridian Global Solutions?',
+  options:['(A) A start-up tech company in Silicon Valley.',
+           '(B) A prestigious firm with international operations.',
+           '(C) A domestic retailer expanding overseas.',
+           '(D) A government trade organization.'],
+  answer:1
+},
+{
+  id:76, part:7, partName:'Part 7 閱讀測驗',
+  passage:`(Same job advertisement as previous question)`,
+  passageFull:`<strong>JOB ADVERTISEMENT — Meridian Global Solutions</strong><br><br>Meridian Global Solutions, a prestigious firm with operations in over 30 countries, is seeking an experienced Senior Sales Representative. Requirements include minimum 5 years of consecutive sales experience, proficiency in CRM software, salary commensurate with experience, and eligible candidates must hold a valid work permit for the region.`,
+  text:'What is stated about the salary for this position?',
+  options:['(A) It is fixed at a specific amount listed in the ad.',
+           '(B) It will be determined after a probation period.',
+           '(C) It is commensurate with experience and industry benchmarks.',
+           '(D) It includes a mandatory performance bonus.'],
+  answer:2
+},
+{
+  id:77, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`<strong>JOB ADVERTISEMENT — Meridian Global Solutions</strong><br><br>Meridian Global Solutions, a prestigious firm with operations in over 30 countries, is seeking an experienced Senior Sales Representative. Requirements include minimum 5 years of consecutive sales experience, proficiency in CRM software, salary commensurate with experience, and eligible candidates must hold a valid work permit for the region.`,
+  text:'Which of the following is NOT listed as a job requirement?',
+  options:['(A) Five or more years of B2B sales experience.',
+           '(B) Proficiency with CRM software.',
+           '(C) A master\'s degree in business administration.',
+           '(D) A valid work permit for the region.'],
+  answer:2
+},
+{
+  id:78, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`<strong>JOB ADVERTISEMENT — Meridian Global Solutions</strong><br><br>Meridian Global Solutions, a prestigious firm with operations in over 30 countries, is seeking an experienced Senior Sales Representative. Key responsibilities include developing client relationships to meet quarterly sales quota, identifying business opportunities in emerging markets, and preparing persuasive sales presentations.`,
+  text:'What does the job involve in relation to new business?',
+  options:['(A) Managing international logistics and freight.',
+           '(B) Identifying opportunities in emerging markets.',
+           '(C) Overseeing the production of new products.',
+           '(D) Conducting employee training seminars.'],
+  answer:1
+},
+{
+  id:79, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`<strong>JOB ADVERTISEMENT — Meridian Global Solutions</strong><br><br>To apply, send your résumé and a cover letter to careers@meridianglobal.com by March 31st.`,
+  text:'How should interested candidates apply for the position?',
+  options:['(A) Submit an online application form on the company website.',
+           '(B) Call the HR department to schedule an interview.',
+           '(C) Send a résumé and cover letter via email by March 31st.',
+           '(D) Drop off documents in person at the company headquarters.'],
+  answer:2
+},
+{
+  id:80, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`<strong>JOB ADVERTISEMENT — Meridian Global Solutions</strong><br><br>Key responsibilities include preparing and delivering persuasive sales presentations to prospective clients, and collaborating with cross-functional teams to ensure customer satisfaction.`,
+  text:'What kind of presentations does the role require?',
+  options:['(A) Technical product demonstrations to engineers.',
+           '(B) Persuasive sales presentations to prospective clients.',
+           '(C) Financial reports to the board of directors.',
+           '(D) Employee onboarding workshops for new hires.'],
+  answer:1
+},
+
+// Passage 2: Business Letter (Q81-87)
+{
+  id:81, part:7, partName:'Part 7 閱讀測驗',
+  passage:`<strong>BUSINESS LETTER</strong><br><br>
+March 5, 20XX<br><br>
+Ms. Laura Bennett<br>
+Procurement Manager<br>
+Apex Office Supplies Ltd.<br>
+14 Commerce Street, Suite 300<br>
+Toronto, ON M5H 2N2<br><br>
+Dear Ms. Bennett,<br><br>
+I am writing on behalf of StarTech Solutions to address our upcoming supply requirements. As our operations continue to expand, we anticipate a significant increase in demand for office equipment and consumables. We would like to explore the possibility of entering into a long-term supply agreement with Apex Office Supplies.<br><br>
+In order to <strong>comply</strong> with our internal procurement policy, any new vendor must be formally evaluated and approved by our purchasing committee. I would appreciate it if you could provide us with a product catalog, pricing structure, and client testimonials at your earliest convenience.<br><br>
+We are particularly interested in bulk-order discounts, as our monthly consumption is <strong>substantial</strong>. Our standard payment terms are net-30, and the agreement would be <strong>subject to</strong> annual review. Please note that delivery fees will be <strong>waived</strong> for orders exceeding $5,000.<br><br>
+I look forward to hearing from you and hope this will mark the beginning of a <strong>prosperous</strong> partnership.<br><br>
+Sincerely,<br>
+David Park<br>
+Director of Operations, StarTech Solutions`,
+  text:'Why is David Park writing this letter?',
+  options:['(A) To complain about a recent order.',
+           '(B) To inquire about a long-term supply agreement.',
+           '(C) To request a refund for damaged goods.',
+           '(D) To confirm an existing delivery schedule.'],
+  answer:1
+},
+{
+  id:82, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`Business letter from David Park to Laura Bennett: The letter states that any new vendor must comply with internal procurement policy and be formally evaluated. David Park requests a product catalog, pricing structure, and client testimonials.`,
+  text:'What does StarTech Solutions require from new vendors?',
+  options:['(A) A signed confidentiality agreement.',
+           '(B) Formal evaluation and approval by the purchasing committee.',
+           '(C) A five-year business track record.',
+           '(D) A physical showroom in the same city.'],
+  answer:1
+},
+{
+  id:83, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`Business letter: David Park requests a product catalog, pricing structure, and client testimonials from Apex Office Supplies.`,
+  text:'What three items does David Park ask Apex to provide?',
+  options:['(A) Product catalog, pricing structure, and client testimonials.',
+           '(B) Delivery schedule, insurance documents, and references.',
+           '(C) Sample products, a price list, and a warranty policy.',
+           '(D) Annual reports, certifications, and employee profiles.'],
+  answer:0
+},
+{
+  id:84, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`Business letter: Our standard payment terms are net-30, and the agreement would be subject to annual review. Delivery fees will be waived for orders exceeding $5,000.`,
+  text:'Under what condition will delivery fees be waived?',
+  options:['(A) When orders are placed more than two weeks in advance.',
+           '(B) For orders exceeding $5,000.',
+           '(C) If the buyer has a platinum membership.',
+           '(D) When items are purchased in a single transaction.'],
+  answer:1
+},
+{
+  id:85, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`Business letter: Our standard payment terms are net-30.`,
+  text:'What are StarTech\'s standard payment terms?',
+  options:['(A) Payment upfront before delivery.',
+           '(B) Net-30 days after invoice date.',
+           '(C) Monthly installments over six months.',
+           '(D) 50% deposit, 50% upon delivery.'],
+  answer:1
+},
+{
+  id:86, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`Business letter: The agreement would be subject to annual review.`,
+  text:'How often will the supply agreement be reviewed?',
+  options:['(A) Every six months.','(B) Every two years.','(C) Annually.','(D) On a quarterly basis.'],
+  answer:2
+},
+{
+  id:87, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`Business letter: David Park writes "I look forward to hearing from you and hope this will mark the beginning of a prosperous partnership."`,
+  text:'What does David Park express at the end of the letter?',
+  options:['(A) Disappointment with the current supplier.',
+           '(B) Hope for a prosperous and long-lasting partnership.',
+           '(C) Urgency to receive goods within one week.',
+           '(D) Concern about rising material costs.'],
+  answer:1
+},
+
+// Passage 3: Double passage — Email exchange (Q88-100, 13 questions)
+// Emails between event organizer and hotel
+{
+  id:88, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passage:`<strong>EMAIL 1</strong><br>
+<strong>From:</strong> Jessica Wong &lt;j.wong@eventpro.com&gt;<br>
+<strong>To:</strong> reservations@grandhotel.com<br>
+<strong>Date:</strong> February 18<br>
+<strong>Subject:</strong> Corporate Event Booking Inquiry<br><br>
+Dear Reservations Team,<br><br>
+I am writing to inquire about availability for a corporate event on Saturday, April 12th. Our company, EventPro, is organizing a <strong>mandatory</strong> annual conference for approximately 150 attendees. We require a main ballroom, two breakout rooms, and full AV support.<br><br>
+Could you please confirm whether the <strong>refurbished</strong> Grand Ballroom is available on that date? We would also need catering services for a sit-down luncheon and a cocktail reception in the evening. Additionally, we are interested in a room block of 30 guest rooms for out-of-town participants.<br><br>
+We are working within a <strong>tentative</strong> budget of $25,000 and would appreciate a detailed proposal at your earliest convenience. Please note that a <strong>deposit</strong> of 30% will be required to confirm the booking, and we understand the remaining balance is due 14 days prior to the event.<br><br>
+Thank you for your assistance.<br><br>
+Best regards,<br>
+Jessica Wong<br>
+Senior Event Coordinator, EventPro`,
+  text:'What is the purpose of Jessica Wong\'s email?',
+  options:['(A) To cancel a previously confirmed reservation.',
+           '(B) To inquire about availability for a corporate event.',
+           '(C) To request a refund for a past event.',
+           '(D) To confirm attendance at a conference.'],
+  answer:1
+},
+{
+  id:89, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 1 from Jessica Wong: EventPro is organizing a mandatory annual conference for approximately 150 attendees. They require a main ballroom, two breakout rooms, and full AV support.`,
+  text:'How many people are expected to attend the conference?',
+  options:['(A) About 30.','(B) Exactly 100.','(C) Approximately 150.','(D) More than 200.'],
+  answer:2
+},
+{
+  id:90, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 1: We are working within a tentative budget of $25,000. A deposit of 30% will be required to confirm the booking.`,
+  text:'What percentage deposit is required to confirm the booking?',
+  options:['(A) 10%','(B) 20%','(C) 30%','(D) 50%'],
+  answer:2
+},
+{
+  id:91, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 1: The remaining balance is due 14 days prior to the event.`,
+  text:'When is the remaining balance due?',
+  options:['(A) On the day of the event.',
+           '(B) 30 days before the event.',
+           '(C) 14 days prior to the event.',
+           '(D) One week after the event.'],
+  answer:2
+},
+{
+  id:92, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 1: The budget is described as "tentative" at $25,000. Jessica requests two breakout rooms and full AV support in addition to the ballroom.`,
+  text:'What does the word "tentative" suggest about the budget?',
+  options:['(A) The budget has already been finalized and approved.',
+           '(B) The budget may still be subject to change.',
+           '(C) The budget is insufficient for the event.',
+           '(D) The budget was set by a third-party client.'],
+  answer:1
+},
+{
+  id:93, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passage:`<strong>EMAIL 2</strong><br>
+<strong>From:</strong> reservations@grandhotel.com<br>
+<strong>To:</strong> j.wong@eventpro.com<br>
+<strong>Date:</strong> February 20<br>
+<strong>Subject:</strong> RE: Corporate Event Booking Inquiry<br><br>
+Dear Ms. Wong,<br><br>
+Thank you for your inquiry. We are delighted to inform you that the newly <strong>refurbished</strong> Grand Ballroom is available on April 12th. Our facilities team has recently completed a comprehensive upgrade, and we are confident the space will meet your expectations.<br><br>
+We can accommodate your request for two breakout rooms and full AV support. Catering packages for a sit-down luncheon and cocktail reception are also available. Our culinary team specializes in customized menus to suit various <strong>dietary</strong> requirements.<br><br>
+Regarding the room block, we can offer 30 guest rooms at a preferential rate of $180 per night. This offer is <strong>subject to</strong> availability at the time of confirmation.<br><br>
+Enclosed please find our detailed event proposal. The total estimated cost comes to $23,800 — within your stated budget. To confirm the reservation, please provide a signed agreement along with a 30% deposit ($7,140) by March 5th. We look forward to hosting your event.<br><br>
+Warm regards,<br>
+Michael Chen<br>
+Events Manager, The Grand Hotel`,
+  text:'What does the hotel confirm in its reply?',
+  options:['(A) That the requested date is fully booked.',
+           '(B) That the Grand Ballroom is available on April 12th.',
+           '(C) That catering services are no longer offered.',
+           '(D) That the room block request cannot be accommodated.'],
+  answer:1
+},
+{
+  id:94, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 2 from Michael Chen: The total estimated cost comes to $23,800 — within the stated budget. The hotel offers 30 guest rooms at a preferential rate of $180 per night, subject to availability at time of confirmation.`,
+  text:'What is the total estimated cost for the event?',
+  options:['(A) $25,000','(B) $23,800','(C) $21,500','(D) $7,140'],
+  answer:1
+},
+{
+  id:95, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 2: The deposit amount is 30% of $23,800 = $7,140. To confirm the reservation, provide a signed agreement along with a 30% deposit ($7,140) by March 5th.`,
+  text:'How much is the deposit amount?',
+  options:['(A) $2,500','(B) $5,000','(C) $7,140','(D) $11,900'],
+  answer:2
+},
+{
+  id:96, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 2: The room block offer of 30 guest rooms at $180 per night is subject to availability at the time of confirmation.`,
+  text:'What condition applies to the room block offer?',
+  options:['(A) Rooms must be booked at least 60 days in advance.',
+           '(B) The offer is subject to availability at time of confirmation.',
+           '(C) Only participants from out of state are eligible.',
+           '(D) A minimum stay of two nights is required.'],
+  answer:1
+},
+{
+  id:97, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 2: The culinary team specializes in customized menus to suit various dietary requirements.`,
+  text:'What does the hotel mention about its catering services?',
+  options:['(A) Catering is outsourced to a third-party company.',
+           '(B) Only a fixed menu is available for large events.',
+           '(C) The culinary team can customize menus for dietary needs.',
+           '(D) Catering prices are not included in the proposal.'],
+  answer:2
+},
+{
+  id:98, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 1: The conference is mandatory. Email 2: To confirm the reservation, provide a signed agreement and 30% deposit by March 5th.`,
+  text:'By what date must EventPro confirm the reservation?',
+  options:['(A) February 28','(B) March 5','(C) March 12','(D) April 1'],
+  answer:1
+},
+{
+  id:99, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 1: The conference is mandatory. Approximately 150 attendees. Email 2: The Grand Ballroom has recently been refurbished and upgraded.`,
+  text:'What is indicated about the Grand Ballroom?',
+  options:['(A) It was recently renovated and upgraded.',
+           '(B) It has a maximum capacity of 100 guests.',
+           '(C) It is only available on weekdays.',
+           '(D) It does not include AV equipment.'],
+  answer:0
+},
+{
+  id:100, part:7, partName:'Part 7 閱讀測驗（雙篇）',
+  passageFull:`Email 1 and 2: Jessica Wong requests, Michael Chen responds. The conference is a mandatory annual event. The estimated cost is within the tentative budget.`,
+  text:'What can be inferred from both emails?',
+  options:['(A) The event budget was insufficient and the hotel offered a discount.',
+           '(B) The hotel\'s quote fits within EventPro\'s budget, making confirmation likely.',
+           '(C) EventPro decided to cancel the event due to scheduling conflicts.',
+           '(D) The hotel was initially unable to accommodate 150 attendees.'],
+  answer:1
+},
+
+// ===== PART 7 新增：Industry Report (Q101-106) =====
+{
+  id:101, part:7, partName:'Part 7 閱讀測驗',
+  passage:`<strong>INDUSTRY REPORT: The Hospitality Sector in Recovery</strong><br><br>
+The global <strong>hospitality</strong> industry, which encompasses hotels, restaurants, and tourism services, has shown remarkable resilience following the economic <strong>recession</strong> of the past two years. According to a <strong>comprehensive</strong> report published by the International Travel and Trade Association (ITTA), overall occupancy rates have returned to pre-recession levels in most major markets.<br><br>
+<strong>Eminent</strong> economists and industry analysts attribute this recovery to a combination of factors, including government stimulus programs, rising consumer confidence, and the <strong>expertise</strong> of hospitality professionals who managed to retain key <strong>welfare</strong> benefits for their staff even during the downturn. These measures helped maintain <strong>decent</strong> employee morale and reduce turnover rates.<br><br>
+<strong>Furthermore</strong>, the ITTA report highlights that hotels adopting sustainable practices have outperformed their competitors. Properties that <strong>ideally</strong> combine eco-friendly operations with premium service have seen occupancy rates rise by up to 22%, a <strong>contrast</strong> to the industry average of 9%.<br><br>
+The report also warns that <strong>imminent</strong> challenges remain, including a <strong>harsh</strong> regulatory environment and rising operational costs. Industry leaders are urged to <strong>ascertain</strong> the viability of new investments carefully and to <strong>redeem</strong> any customer loyalty programs to strengthen repeat business.`,
+  text:'What is the main subject of the ITTA report?',
+  options:['(A) The decline of the global tourism industry.',
+           '(B) The recovery of the hospitality sector after a recession.',
+           '(C) New regulations affecting the hotel industry.',
+           '(D) The rising cost of food and beverage services.'],
+  answer:1
+},
+{
+  id:102, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`ITTA report on hospitality recovery: Eminent economists attribute recovery to government stimulus, rising consumer confidence, and the expertise of professionals who maintained welfare benefits for staff, keeping decent employee morale and reducing turnover.`,
+  text:'According to the report, what helped maintain employee morale during the downturn?',
+  options:['(A) Offering employees larger salaries and bonuses.',
+           '(B) Retaining key welfare benefits for staff.',
+           '(C) Reducing working hours across the industry.',
+           '(D) Providing free hospitality training programs.'],
+  answer:1
+},
+{
+  id:103, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`ITTA report: Hotels adopting sustainable practices have outperformed competitors. Properties that combine eco-friendly operations with premium service have seen occupancy rates rise by up to 22%, a contrast to the industry average of 9%.`,
+  text:'How much did occupancy rates rise for eco-friendly hotels?',
+  options:['(A) By 9%','(B) By 15%','(C) By 22%','(D) By 30%'],
+  answer:2
+},
+{
+  id:104, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`ITTA report: The report warns that imminent challenges remain, including a harsh regulatory environment and rising operational costs.`,
+  text:'What challenges does the report say are ahead for the industry?',
+  options:['(A) A shortage of qualified hospitality staff worldwide.',
+           '(B) Declining consumer interest in travel and tourism.',
+           '(C) A harsh regulatory environment and rising operational costs.',
+           '(D) Oversupply of hotel rooms in major cities.'],
+  answer:2
+},
+{
+  id:105, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`ITTA report: Industry leaders are urged to ascertain the viability of new investments carefully and to redeem any customer loyalty programs to strengthen repeat business.`,
+  text:'What are industry leaders urged to do regarding customer loyalty programs?',
+  options:['(A) Discontinue them to cut operational costs.',
+           '(B) Replace them with cash discount systems.',
+           '(C) Redeem them to strengthen repeat business.',
+           '(D) Transfer them to a third-party operator.'],
+  answer:2
+},
+{
+  id:106, part:7, partName:'Part 7 閱讀測驗',
+  passageFull:`ITTA report: Eminent economists and industry analysts attribute recovery to rising consumer confidence and the expertise of hospitality professionals.`,
+  text:'The word "eminent" in the passage is closest in meaning to:',
+  options:['(A) anonymous','(B) distinguished','(C) reluctant','(D) temporary'],
+  answer:1
+}
+
+];
+
+// ==================== APP STATE ====================
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(-1);
+let timerSec = 140 * 60;
+let timerID = null;
+let testStarted = false;
+
+function startTest() {
+  document.getElementById('screen-intro').style.display = 'none';
+  document.getElementById('screen-test').style.display = 'block';
+  testStarted = true;
+  buildPills();
+  renderQ();
+  startTimer();
+}
+
+function startTimer() {
+  timerID = setInterval(() => {
+    timerSec--;
+    if (timerSec <= 0) { clearInterval(timerID); submitTest(); return; }
+    updateTimerDisplay();
+    if (timerSec <= 300) document.getElementById('timer').classList.add('warn');
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSec / 60).toString().padStart(2,'0');
+  const s = (timerSec % 60).toString().padStart(2,'0');
+  document.getElementById('timer').textContent = m + ':' + s;
+}
+
+function buildPills() {
+  const c = document.getElementById('q-pills');
+  c.innerHTML = '';
+  QUESTIONS.forEach((q,i) => {
+    const d = document.createElement('button');
+    d.className = 'pill' + (i === current ? ' cur' : '');
+    d.textContent = i + 1;
+    d.onclick = () => { current = i; renderQ(); };
+    d.id = 'pill-' + i;
+    c.appendChild(d);
+  });
+}
+
+function updatePills() {
+  QUESTIONS.forEach((_,i) => {
+    const p = document.getElementById('pill-' + i);
+    if (!p) return;
+    p.className = 'pill' + (answers[i] >= 0 ? ' ans' : '') + (i === current ? ' cur' : '');
+  });
+}
+
+function renderQ() {
+  const q = QUESTIONS[current];
+  const isLast = current === QUESTIONS.length - 1;
+
+  // Update progress
+  const pct = ((current + 1) / QUESTIONS.length * 100).toFixed(1);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('part-label').textContent = q.partName + ' — 第 ' + (current+1) + ' 題 / 共 ' + QUESTIONS.length + ' 題';
+  document.getElementById('q-counter').textContent = (current + 1) + ' / ' + QUESTIONS.length;
+  document.getElementById('btn-next').textContent = isLast ? '交卷' : '下一題 →';
+  document.getElementById('btn-next').className = 'btn-nav ' + (isLast ? 'btn-submit' : 'btn-next');
+  document.getElementById('btn-next').onclick = isLast ? submitTest : () => navQ(1);
+
+  let html = '<div class="q-card">';
+  html += '<div class="q-num">Question ' + (current+1) + ' &nbsp;|&nbsp; ' + q.partName + '</div>';
+
+  // Scene (Part 1)
+  if (q.part === 1 && q.svgScene) {
+    html += '<div style="margin-bottom:14px">' + q.svgScene + '</div>';
+  }
+
+  // Audio bar (Part 1-4)
+  if (q.part <= 4 && q.tts) {
+    html += '<div class="audio-bar"><button class="play-btn" onclick="speakCurrent()">▶ 播放音檔</button><span class="audio-label">點擊收聽題目（TTS 模擬）</span></div>';
+  }
+
+  // Context (Part 3/4)
+  if (q.ctx) {
+    html += '<div class="ctx-box">' + q.ctx + '</div>';
+  }
+  if (q.passageFull) {
+    html += '<div class="passage">' + q.passageFull + '</div>';
+  }
+
+  // Passage (Part 6/7 first question of each passage)
+  if (q.passage) {
+    html += '<div class="passage">' + q.passage + '</div>';
+  }
+
+  html += '<div class="q-text">' + q.text + '</div>';
+
+  html += '<div class="options">';
+  q.options.forEach((opt, oi) => {
+    let cls = 'opt';
+    if (answers[current] >= 0) {
+      if (oi === q.answer) cls += ' correct';
+      else if (oi === answers[current] && answers[current] !== q.answer) cls += ' wrong';
+    } else if (answers[current] === oi) cls += ' selected';
+    html += '<div class="' + cls + '" onclick="selectAns(' + oi + ')">';
+    html += '<span class="opt-letter">' + String.fromCharCode(65+oi) + '</span>';
+    html += '<span>' + opt + '</span></div>';
+  });
+  html += '</div>';
+
+  // Show Chinese translation after answering (Part 5 & 6 only)
+  if (answers[current] >= 0 && (q.part === 5 || q.part === 6) && q.zh) {
+    html += '<div class="translation-box"><div class="zh-label">📖 中文翻譯</div><div class="zh-sentence">' + q.zh + '</div></div>';
+  }
+
+  html += '</div>';
+
+  document.getElementById('q-area').innerHTML = html;
+  updatePills();
+}
+
+function selectAns(oi) {
+  if (answers[current] >= 0) return; // already answered — allow change
+  answers[current] = oi;
+  renderQ();
+}
+
+function navQ(dir) {
+  current = Math.max(0, Math.min(QUESTIONS.length - 1, current + dir));
+  renderQ();
+}
+
+function submitTest() {
+  clearInterval(timerID);
+  document.getElementById('screen-test').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'block';
+  showResult();
+}
+
+function showResult() {
+  let total = 0;
+  const partStats = {};
+
+  QUESTIONS.forEach((q, i) => {
+    const isCorrect = answers[i] === q.answer;
+    if (isCorrect) total++;
+    if (!partStats[q.part]) partStats[q.part] = {name: q.partName.split(' ').slice(0,2).join(' '), c:0, t:0};
+    partStats[q.part].t++;
+    if (isCorrect) partStats[q.part].c++;
+  });
+
+  const pct = Math.round(total / QUESTIONS.length * 100);
+  // Rough TOEIC score estimate (Reading+Listening both 495 max → total 990)
+  const est = Math.min(990, Math.round(total / QUESTIONS.length * 850 + 100));
+
+  document.getElementById('score-big').textContent = total + ' / ' + QUESTIONS.length;
+  document.getElementById('score-sub').innerHTML = '正確率 ' + pct + '% &nbsp;｜&nbsp; 估算多益分數 <strong>' + est + '</strong> 分';
+
+  let psHtml = '';
+  Object.entries(partStats).forEach(([part, s]) => {
+    psHtml += '<div class="ps"><div class="ps-name">' + s.name + '</div><div class="ps-val">' + s.c + '/' + s.t + '</div></div>';
+  });
+  document.getElementById('part-scores').innerHTML = psHtml;
+
+  let reviewHtml = '';
+  QUESTIONS.forEach((q, i) => {
+    const isCorrect = answers[i] === q.answer;
+    const userAns = answers[i] >= 0 ? q.options[answers[i]] : '（未作答）';
+    const correctAns = q.options[q.answer];
+    reviewHtml += '<div class="r-item ' + (isCorrect ? 'ok' : 'bad') + '">';
+    reviewHtml += '<div class="r-q"><strong>Q' + (i+1) + '.</strong> ' + q.text + '</div>';
+    if (!isCorrect) {
+      reviewHtml += '<div class="r-ans"><span class="wrong-lbl">✗ 你的答案：</span>' + userAns + '</div>';
+      reviewHtml += '<div class="r-ans"><span class="correct-lbl">✓ 正確答案：</span>' + correctAns + '</div>';
+    } else {
+      reviewHtml += '<div class="r-ans"><span class="correct-lbl">✓ 答對：</span>' + correctAns + '</div>';
+    }
+    reviewHtml += '</div>';
+  });
+  document.getElementById('review-list').innerHTML = reviewHtml;
+}
+
+function speakCurrent() {
+  const q = QUESTIONS[current];
+  if (q && q.tts) speak(q.tts);
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) { alert('您的瀏覽器不支援語音合成'); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = 0.9;
+  // Wait for voices to load (Chrome requires this)
+  const go = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const en = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+               voices.find(v => v.lang.startsWith('en-US')) ||
+               voices.find(v => v.lang.startsWith('en'));
+    if (en) u.voice = en;
+    window.speechSynthesis.speak(u);
+  };
+  if (window.speechSynthesis.getVoices().length) { go(); }
+  else { window.speechSynthesis.onvoiceschanged = go; window.speechSynthesis.speak(u); }
+}
+</script>
+</body>
+</html>
