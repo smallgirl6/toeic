@@ -99,6 +99,11 @@ header h1{font-size:1.1rem;font-weight:700}
 .ctx-title{font-size:.72rem;font-weight:700;color:#b7791f;margin-bottom:6px;text-transform:uppercase}
 .dialogue p{margin-bottom:4px}
 .dialogue .speaker{font-weight:700;color:#1a56db}
+/* Group questions */
+.group-q-item{border-top:2px dashed #e2e8f0;padding-top:18px;margin-top:18px}
+.group-q-badge{display:inline-block;font-size:.7rem;font-weight:700;background:#e2e8f0;color:#4a5568;padding:2px 8px;border-radius:20px;margin-bottom:8px}
+.group-q-badge.cur{background:#1a56db;color:#fff}
+.ctx-hidden{display:flex;align-items:center;gap:8px;background:#f7fafc;border:1.5px dashed #cbd5e0;border-radius:10px;padding:12px 16px;margin-bottom:14px;color:#a0aec0;font-size:.85rem;font-style:italic}
 
 @media(max-width:600px){
   header h1{font-size:.9rem}
@@ -660,7 +665,7 @@ const QUESTIONS = [
 // ===== PART 3: Short Conversations (Q32-40) =====
 // Conversation 1: Project deadline
 {
-  id:32, part:3, partName:'Part 3 簡短對話',
+  id:32, part:3, gid:'g1', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境</div>
   <div class="dialogue">
     <p><span class="speaker">Manager (W):</span> I just received word that the client wants the project delivered two weeks ahead of schedule. That means we need to expedite everything.</p>
@@ -676,7 +681,7 @@ const QUESTIONS = [
   answer:1
 },
 {
-  id:33, part:3, partName:'Part 3 簡短對話',
+  id:33, part:3, gid:'g1', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境（同上）</div>
   <div class="dialogue">
     <p><span class="speaker">Manager (W):</span> I just received word that the client wants the project delivered two weeks ahead of schedule. That means we need to expedite everything.</p>
@@ -692,7 +697,7 @@ const QUESTIONS = [
   answer:1
 },
 {
-  id:34, part:3, partName:'Part 3 簡短對話',
+  id:34, part:3, gid:'g1', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境（同上）</div>
   <div class="dialogue">
     <p><span class="speaker">Manager (W):</span> I just received word that the client wants the project delivered two weeks ahead of schedule. That means we need to expedite everything.</p>
@@ -709,7 +714,7 @@ const QUESTIONS = [
 },
 // Conversation 2: Customer service
 {
-  id:35, part:3, partName:'Part 3 簡短對話',
+  id:35, part:3, gid:'g2', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境</div>
   <div class="dialogue">
     <p><span class="speaker">Customer (M):</span> I purchased this item online last week, but when I opened the package, the screen was cracked. I'd like a refund or a replacement.</p>
@@ -726,7 +731,7 @@ const QUESTIONS = [
   answer:1
 },
 {
-  id:36, part:3, partName:'Part 3 簡短對話',
+  id:36, part:3, gid:'g2', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境（同上）</div>
   <div class="dialogue">
     <p><span class="speaker">Customer (M):</span> I purchased this item online last week, but when I opened the package, the screen was cracked. I'd like a refund or a replacement.</p>
@@ -743,7 +748,7 @@ const QUESTIONS = [
   answer:2
 },
 {
-  id:37, part:3, partName:'Part 3 簡短對話',
+  id:37, part:3, gid:'g2', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境（同上）</div>
   <div class="dialogue">
     <p><span class="speaker">Customer (M):</span> I purchased this item online last week, but when I opened the package, the screen was cracked. I'd like a refund or a replacement.</p>
@@ -761,7 +766,7 @@ const QUESTIONS = [
 },
 // Conversation 3: Restructuring
 {
-  id:38, part:3, partName:'Part 3 簡短對話',
+  id:38, part:3, gid:'g3', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境</div>
   <div class="dialogue">
     <p><span class="speaker">Colleague A (W):</span> Did you hear about the restructuring? It sounds like the sales and marketing divisions will be consolidated into one department.</p>
@@ -777,7 +782,7 @@ const QUESTIONS = [
   answer:2
 },
 {
-  id:39, part:3, partName:'Part 3 簡短對話',
+  id:39, part:3, gid:'g3', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境（同上）</div>
   <div class="dialogue">
     <p><span class="speaker">Colleague A (W):</span> Did you hear about the restructuring? It sounds like the sales and marketing divisions will be consolidated into one department.</p>
@@ -793,7 +798,7 @@ const QUESTIONS = [
   answer:2
 },
 {
-  id:40, part:3, partName:'Part 3 簡短對話',
+  id:40, part:3, gid:'g3', partName:'Part 3 簡短對話',
   ctx:`<div class="ctx-title">對話情境（同上）</div>
   <div class="dialogue">
     <p><span class="speaker">Colleague A (W):</span> Did you hear about the restructuring? It sounds like the sales and marketing divisions will be consolidated into one department.</p>
@@ -812,7 +817,7 @@ const QUESTIONS = [
 // ===== PART 4: Short Talks (Q41-46) =====
 // Talk 1: Company announcement
 {
-  id:41, part:4, partName:'Part 4 簡短獨白',
+  id:41, part:4, gid:'g4', partName:'Part 4 簡短獨白',
   ctx:`<div class="ctx-title">獨白內容</div>
   <p>Good morning, everyone. I'd like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.</p>`,
   tts:'Good morning, everyone. I\'d like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.',
@@ -824,7 +829,7 @@ const QUESTIONS = [
   answer:1
 },
 {
-  id:42, part:4, partName:'Part 4 簡短獨白',
+  id:42, part:4, gid:'g4', partName:'Part 4 簡短獨白',
   ctx:`<div class="ctx-title">獨白內容（同上）</div>
   <p>Good morning, everyone. I'd like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.</p>`,
   tts:'Same talk as before.',
@@ -836,7 +841,7 @@ const QUESTIONS = [
   answer:1
 },
 {
-  id:43, part:4, partName:'Part 4 簡短獨白',
+  id:43, part:4, gid:'g4', partName:'Part 4 簡短獨白',
   ctx:`<div class="ctx-title">獨白內容（同上）</div>
   <p>Good morning, everyone. I'd like to take a moment to announce an exciting milestone. As of this quarter, our company has achieved consecutive record-breaking sales for the third year in a row. This outstanding performance reflects the diligent efforts of every team member. In recognition of your unwavering commitment, management has approved a bonus equivalent to ten percent of your annual salary. Additionally, we are pleased to introduce a new wellness benefit, commencing next month. Details will be sent to your company email. Thank you all for your dedication and persistence.</p>`,
   tts:'Same talk as before.',
@@ -849,7 +854,7 @@ const QUESTIONS = [
 },
 // Talk 2: Radio advertisement
 {
-  id:44, part:4, partName:'Part 4 簡短獨白',
+  id:44, part:4, gid:'g5', partName:'Part 4 簡短獨白',
   ctx:`<div class="ctx-title">獨白內容</div>
   <p>Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.</p>`,
   tts:'Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.',
@@ -861,7 +866,7 @@ const QUESTIONS = [
   answer:1
 },
 {
-  id:45, part:4, partName:'Part 4 簡短獨白',
+  id:45, part:4, gid:'g5', partName:'Part 4 簡短獨白',
   ctx:`<div class="ctx-title">獨白內容（同上）</div>
   <p>Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.</p>`,
   tts:'Same talk as before.',
@@ -873,7 +878,7 @@ const QUESTIONS = [
   answer:2
 },
 {
-  id:46, part:4, partName:'Part 4 簡短獨白',
+  id:46, part:4, gid:'g5', partName:'Part 4 簡短獨白',
   ctx:`<div class="ctx-title">獨白內容（同上）</div>
   <p>Are you looking for premium, authentic gourmet products at competitive prices? Visit NatureFresh Market — your one-stop destination for organic produce, artisan goods, and perishable specialty items sourced directly from local farmers. This weekend only, enjoy twenty percent off all nutritious snacks and beverages. Our knowledgeable staff are on hand to help you find the perfect items to suit your dietary needs. NatureFresh Market — where quality meets sustainability. Visit us at 88 Green Valley Road, or shop online at NatureFresh dot com. Offer valid while stocks last.</p>`,
   tts:'Same talk as before.',
@@ -1613,11 +1618,13 @@ function updatePills() {
   });
 }
 
-function renderQ() {
+// Build group index once
+const GROUP_MAP = {};
+QUESTIONS.forEach((q, i) => { if (q.gid) { if (!GROUP_MAP[q.gid]) GROUP_MAP[q.gid] = []; GROUP_MAP[q.gid].push(i); } });
+
+function updateHeader() {
   const q = QUESTIONS[current];
   const isLast = current === QUESTIONS.length - 1;
-
-  // Update progress
   const pct = ((current + 1) / QUESTIONS.length * 100).toFixed(1);
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('part-label').textContent = q.partName + ' — 第 ' + (current+1) + ' 題 / 共 ' + QUESTIONS.length + ' 題';
@@ -1625,6 +1632,14 @@ function renderQ() {
   document.getElementById('btn-next').textContent = isLast ? '交卷' : '下一題 →';
   document.getElementById('btn-next').className = 'btn-nav ' + (isLast ? 'btn-submit' : 'btn-next');
   document.getElementById('btn-next').onclick = isLast ? submitTest : () => navQ(1);
+}
+
+function renderQ() {
+  const q = QUESTIONS[current];
+  updateHeader();
+
+  // Grouped questions (Part 3/4)
+  if (q.gid) { renderGroupQ(q.gid); return; }
 
   let html = '<div class="q-card">';
   html += '<div class="q-num">Question ' + (current+1) + ' &nbsp;|&nbsp; ' + q.partName + '</div>';
@@ -1639,21 +1654,11 @@ function renderQ() {
     html += '<div class="audio-bar"><button class="play-btn" onclick="speakCurrent()">▶ 播放音檔</button><span class="audio-label">點擊收聽題目（TTS 模擬）</span></div>';
   }
 
-  // Context (Part 3/4)
-  if (q.ctx) {
-    html += '<div class="ctx-box">' + q.ctx + '</div>';
-  }
-  if (q.passageFull) {
-    html += '<div class="passage">' + q.passageFull + '</div>';
-  }
+  if (q.passageFull) html += '<div class="passage">' + q.passageFull + '</div>';
+  if (q.passage) html += '<div class="passage">' + q.passage + '</div>';
 
-  // Passage (Part 6/7 first question of each passage)
-  if (q.passage) {
-    html += '<div class="passage">' + q.passage + '</div>';
-  }
-
-  // Part 1-4 聽力題：未答題前隱藏題目文字
-  if (q.part <= 4 && answers[current] < 0) {
+  // Part 1-2 聽力題：未答題前隱藏題目文字
+  if (q.part <= 2 && answers[current] < 0) {
     html += '<div class="q-text" style="color:#a0aec0;font-style:italic;font-size:.85rem">🔇 請先播放音檔並選擇答案</div>';
   } else {
     html += '<div class="q-text">' + q.text + '</div>';
@@ -1665,32 +1670,117 @@ function renderQ() {
     if (answers[current] >= 0) {
       if (oi === q.answer) cls += ' correct';
       else if (oi === answers[current] && answers[current] !== q.answer) cls += ' wrong';
-    } else if (answers[current] === oi) cls += ' selected';
+    }
     html += '<div class="' + cls + '" onclick="selectAns(' + oi + ')">';
     html += '<span class="opt-letter">' + String.fromCharCode(65+oi) + '</span>';
     html += '<span>' + opt + '</span></div>';
   });
   html += '</div>';
 
-  // Show Chinese translation after answering (Part 5 & 6 only)
   if (answers[current] >= 0 && (q.part === 5 || q.part === 6) && q.zh) {
     html += '<div class="translation-box"><div class="zh-label">📖 中文翻譯</div><div class="zh-sentence">' + q.zh + '</div></div>';
   }
 
   html += '</div>';
-
   document.getElementById('q-area').innerHTML = html;
   updatePills();
 }
 
+function renderGroupQ(gid) {
+  const indices = GROUP_MAP[gid];
+  const firstQ = QUESTIONS[indices[0]];
+  // Context revealed only after first question of group is answered
+  const ctxRevealed = answers[indices[0]] >= 0;
+
+  let html = '<div class="q-card">';
+  const qNums = indices.map(i => i + 1).join('、');
+  html += '<div class="q-num">Questions ' + qNums + ' &nbsp;|&nbsp; ' + firstQ.partName + '</div>';
+
+  // Audio bar (one for the whole group)
+  html += '<div class="audio-bar"><button class="play-btn" onclick="speakGroup('' + gid + '')">▶ 播放音檔</button><span class="audio-label">點擊收聽（TTS 模擬）</span></div>';
+
+  // Context (dialogue/talk) — hidden until first Q answered
+  if (!ctxRevealed) {
+    html += '<div class="ctx-hidden">🔇 請先播放音檔，選完第一題後對話內容將顯示</div>';
+  } else {
+    html += '<div class="ctx-box">' + firstQ.ctx + '</div>';
+  }
+
+  // Each question in the group
+  indices.forEach((qi, rank) => {
+    const qq = QUESTIONS[qi];
+    const isCur = qi === current;
+    const isAnswered = answers[qi] >= 0;
+    const isFirst = rank === 0;
+
+    if (!isFirst) html += '<div class="group-q-item">';
+
+    html += '<span class="group-q-badge' + (isCur ? ' cur' : '') + '">Q' + (qi + 1) + (isCur ? ' ◀ 目前題目' : '') + '</span>';
+
+    // Question text: always visible (user needs to know what to answer)
+    html += '<div class="q-text">' + qq.text + '</div>';
+
+    html += '<div class="options">';
+    qq.options.forEach((opt, oi) => {
+      let cls = 'opt';
+      if (isAnswered) {
+        if (oi === qq.answer) cls += ' correct';
+        else if (oi === answers[qi] && answers[qi] !== qq.answer) cls += ' wrong';
+      }
+      html += '<div class="' + cls + '" onclick="selectGroupAns(' + qi + ',' + oi + ')">';
+      html += '<span class="opt-letter">' + String.fromCharCode(65+oi) + '</span>';
+      html += '<span>' + opt + '</span></div>';
+    });
+    html += '</div>';
+
+    if (!isFirst) html += '</div>';
+  });
+
+  html += '</div>';
+  document.getElementById('q-area').innerHTML = html;
+  updatePills();
+}
+
+function selectGroupAns(qi, oi) {
+  if (answers[qi] >= 0) return;
+  answers[qi] = oi;
+  // Advance current to next unanswered in group, or last of group
+  const gid = QUESTIONS[qi].gid;
+  const indices = GROUP_MAP[gid];
+  const nextUnanswered = indices.find(i => i > qi && answers[i] < 0);
+  if (nextUnanswered !== undefined) current = nextUnanswered;
+  else current = qi;
+  renderQ();
+}
+
 function selectAns(oi) {
-  if (answers[current] >= 0) return; // already answered — allow change
+  if (answers[current] >= 0) return;
   answers[current] = oi;
   renderQ();
 }
 
+function speakGroup(gid) {
+  const firstIdx = GROUP_MAP[gid][0];
+  const q = QUESTIONS[firstIdx];
+  if (q && q.tts) speak(q.tts);
+}
+
 function navQ(dir) {
-  current = Math.max(0, Math.min(QUESTIONS.length - 1, current + dir));
+  const q = QUESTIONS[current];
+  // If in a group, jump to first/last of group then outside
+  if (q.gid && dir === 1) {
+    const indices = GROUP_MAP[q.gid];
+    const lastInGroup = indices[indices.length - 1];
+    current = Math.min(QUESTIONS.length - 1, lastInGroup + 1);
+  } else if (q.gid && dir === -1) {
+    const indices = GROUP_MAP[q.gid];
+    current = Math.max(0, indices[0] - 1);
+  } else {
+    current = Math.max(0, Math.min(QUESTIONS.length - 1, current + dir));
+    // If landed in middle of a group, go to first of group
+    const nq = QUESTIONS[current];
+    if (nq.gid) current = GROUP_MAP[nq.gid][0];
+  }
   renderQ();
 }
 
