@@ -1697,7 +1697,7 @@ function renderGroupQ(gid) {
   html += '<div class="q-num">Questions ' + qNums + ' &nbsp;|&nbsp; ' + firstQ.partName + '</div>';
 
   // Audio bar (one for the whole group)
-  html += '<div class="audio-bar"><button class="play-btn" onclick="speakGroup('' + gid + '')">▶ 播放音檔</button><span class="audio-label">點擊收聽（TTS 模擬）</span></div>';
+  html += '<div class="audio-bar"><button class="play-btn" onclick="speakGroup(\'' + gid + '\')">▶ 播放音檔</button><span class="audio-label">點擊收聽（TTS 模擬）</span></div>';
 
   // Context (dialogue/talk) — hidden until first Q answered
   if (!ctxRevealed) {
