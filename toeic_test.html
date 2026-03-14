@@ -1652,7 +1652,12 @@ function renderQ() {
     html += '<div class="passage">' + q.passage + '</div>';
   }
 
-  html += '<div class="q-text">' + q.text + '</div>';
+  // Part 1-4 聽力題：未答題前隱藏題目文字
+  if (q.part <= 4 && answers[current] < 0) {
+    html += '<div class="q-text" style="color:#a0aec0;font-style:italic;font-size:.85rem">🔇 請先播放音檔並選擇答案</div>';
+  } else {
+    html += '<div class="q-text">' + q.text + '</div>';
+  }
 
   html += '<div class="options">';
   q.options.forEach((opt, oi) => {
